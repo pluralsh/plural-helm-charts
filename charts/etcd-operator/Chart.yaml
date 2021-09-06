@@ -1,0 +1,14 @@
+apiVersion: v2
+name: etcd-operator
+description: A Helm chart for the etcd operator
+type: application
+version: 0.1.0
+home: https://github.com/pluralsh/plural-helm-charts
+icon: https://github.com/pluralsh/plural/raw/master/www/public/favicon-96x96.png
+keywords:
+  - etcd
+  - operator
+  - database
+maintainers:
+  - name: DavidSpek
+appVersion: "0.3.0"
