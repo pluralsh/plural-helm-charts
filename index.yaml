@@ -19,4 +19,21 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/etcd-operator-0.1.0/etcd-operator-0.1.0.tgz
     version: 0.1.0
-generated: "2021-09-06T20:47:55.655067305Z"
+  opentelemetry-operator:
+  - apiVersion: v2
+    appVersion: 0.33.0
+    created: "2021-10-04T09:32:50.853311904Z"
+    description: OpenTelemetry Operator Helm chart for Kubernetes
+    digest: dce0e2c8ac4ec57840c6f7123d46358cb93301b96710743e668d1079c38ccd6d
+    home: https://opentelemetry.io/
+    icon: https://raw.githubusercontent.com/cncf/artwork/a718fa97fffec1b9fd14147682e9e3ac0c8817cb/projects/opentelemetry/icon/color/opentelemetry-icon-color.png
+    maintainers:
+    - name: DavidSpek
+    name: opentelemetry-operator
+    sources:
+    - https://github.com/pluralsh/plural-helm-charts
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/opentelemetry-operator-0.3.2/opentelemetry-operator-0.3.2.tgz
+    version: 0.3.2
+generated: "2021-10-04T09:32:50.853316704Z"
