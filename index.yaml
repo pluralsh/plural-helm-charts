@@ -68,4 +68,21 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/opentelemetry-operator-0.3.2/opentelemetry-operator-0.3.2.tgz
     version: 0.3.2
-generated: "2021-10-04T11:33:55.065057201Z"
+  tempo-distributed:
+  - apiVersion: v2
+    appVersion: 1.1.0
+    created: "2021-10-04T15:36:57.564183773Z"
+    description: Grafana Tempo in MicroService mode
+    digest: 613eecaf8b4028c2e14561b06bc986753b83c4b25adc86a748ed7375009fe9da
+    home: https://grafana.com/docs/tempo/latest/
+    icon: https://raw.githubusercontent.com/grafana/tempo/master/docs/tempo/website/logo_and_name.png
+    maintainers:
+    - name: DavidSpek
+    name: tempo-distributed
+    sources:
+    - https://github.com/grafana/tempo
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/tempo-distributed-0.9.16/tempo-distributed-0.9.16.tgz
+    version: 0.9.16
+generated: "2021-10-04T15:36:57.564196474Z"
