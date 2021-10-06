@@ -19,6 +19,24 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/etcd-operator-0.1.0/etcd-operator-0.1.0.tgz
     version: 0.1.0
+  mysql-operator:
+  - apiVersion: v1
+    appVersion: v0.5.0
+    created: "2021-10-06T13:10:27.317570791Z"
+    description: A helm chart for Bitpoke Operator for MySQL
+    digest: cba22b1689c5ad39f943110620d17db7d1566bdcc84010071cc09aad10f1cea6
+    home: https://github.com/bitpoke/mysql-operator
+    keywords:
+    - mysql
+    - percona
+    - orchestrator
+    - bitpoke
+    name: mysql-operator
+    sources:
+    - https://github.com/bitpoke/mysql-operator.git
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/mysql-operator-0.1.0/mysql-operator-0.1.0.tgz
+    version: 0.1.0
   opentelemetry-operator:
   - apiVersion: v2
     appVersion: 0.33.0
@@ -85,4 +103,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/tempo-distributed-0.9.16/tempo-distributed-0.9.16.tgz
     version: 0.9.16
-generated: "2021-10-04T15:36:57.564196474Z"
+generated: "2021-10-06T13:10:27.317590791Z"
