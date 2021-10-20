@@ -19,6 +19,34 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/etcd-operator-0.1.0/etcd-operator-0.1.0.tgz
     version: 0.1.0
+  goldilocks:
+  - apiVersion: v2
+    appVersion: v3.1.4
+    created: "2021-10-20T12:59:27.855840481Z"
+    dependencies:
+    - condition: vpa.enabled
+      name: vpa
+      repository: https://charts.fairwinds.com/stable
+      version: 0.5.0
+    - condition: metrics-server.enabled
+      name: metrics-server
+      repository: https://charts.bitnami.com/bitnami
+      version: 5.3.3
+    description: 'A Helm chart for running Fairwinds Goldilocks. See https://github.com/FairwindsOps/goldilocks '
+    digest: 580b6832c43716dcbc3773c91f4bdb5037e8b76a2b4a668fabb569e3266ffd22
+    icon: https://raw.githubusercontent.com/pluralsh/plural-helm-charts/master/charts/goldilocks/icon.png
+    keywords:
+    - goldilocks
+    - resources
+    - kubernetes
+    maintainers:
+    - name: DavidSpek
+    name: goldilocks
+    sources:
+    - https://github.com/FairwindsOps/goldilocks
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/goldilocks-3.3.0/goldilocks-3.3.0.tgz
+    version: 3.3.0
   mysql-operator:
   - apiVersion: v1
     appVersion: v0.5.0
@@ -103,4 +131,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/tempo-distributed-0.9.16/tempo-distributed-0.9.16.tgz
     version: 0.9.16
-generated: "2021-10-06T13:10:27.317590791Z"
+generated: "2021-10-20T12:59:27.855851181Z"
