@@ -131,4 +131,18 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/tempo-distributed-0.9.16/tempo-distributed-0.9.16.tgz
     version: 0.9.16
-generated: "2021-10-20T12:59:27.855851181Z"
+  vaultwarden:
+  - apiVersion: v2
+    appVersion: 1.21.0
+    created: "2021-11-09T13:26:36.60453682Z"
+    description: A Helm chart for Kubernetes
+    digest: c1dae201b79a0cc955e38a78b2326137133c22ec2307502d2dd484ce948de2d9
+    home: https://github.com/pluralsh/plural-helm-charts
+    maintainers:
+    - name: DavidSpek
+    name: vaultwarden
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
+    version: 0.1.0
+generated: "2021-11-09T13:26:36.60455152Z"
