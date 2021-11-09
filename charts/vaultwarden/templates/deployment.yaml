@@ -1,0 +1,168 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "vaultwarden.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "vaultwarden.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 90
+      serviceAccountName: {{ include "vaultwarden.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DATA_FOLDER
+              value: {{ .Values.config.dataFolder }}
+            - name: ROCKET_PORT
+              value: "8080"
+            {{- if .Values.config.insecure }}
+            - name: DOMAIN
+              value: http://{{ .Values.config.domain }}
+            {{- else }}
+            - name: DOMAIN
+              value: https://{{ .Values.config.domain }}
+            {{- end }}
+            - name: SIGNUPS_ALLOWED
+              value: {{ .Values.config.signupEnabled | quote }}
+            - name: SIGNUPS_DOMAINS_WHITELIST
+              value: {{ .Values.config.signupDomainsWhitelist | quote }}
+            - name: SIGNUPS_VERIFY
+              value: {{ .Values.config.signupVerify | quote }}
+            - name: WEBSOCKET_ENABLED
+              value: {{ .Values.config.websocketNotificationsEnabled | quote }}
+            {{- if .Values.config.mail.enabled }}
+            - name: SMTP_HOST
+              value: {{ .Values.config.mail.host }}
+            - name: SMTP_PORT
+              value: {{ .Values.config.mail.port | quote }}
+            - name: SMTP_SSL
+              value: {{ .Values.config.mail.sslEnabled | quote }}
+            - name: SMTP_EXPLICIT_TLS
+              value: {{ .Values.config.mail.explicitTLS | quote }}
+            - name: SMTP_TIMEOUT
+              value: {{ .Values.config.mail.timeout | quote }}
+            - name: SMTP_FROM
+              value: {{ .Values.config.mail.fromAddress }}
+            - name: SMTP_FROM_NAME
+              value: {{ .Values.config.mail.fromName }}
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.config.mail.existingSecret | default "vaultwarden-smtp-creds" }}
+                  {{- if .Values.config.mail.existingSecret }}
+                  key: {{ .Values.config.mail.userKey | default "username" }}
+                  {{- else }}
+                  key: username
+                  {{- end }}
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.config.mail.existingSecret | default "vaultwarden-smtp-creds" }}
+                  {{- if .Values.config.mail.existingSecret }}
+                  key: {{ .Values.config.mail.passwordKey | default "password" }}
+                  {{- else }}
+                  key: password
+                  {{- end }}
+            - name: SMTP_AUTH_MECHANISM
+              value: {{ .Values.config.mail.authMechanism | quote }}
+            {{- end }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.config.database.existingSecret | default "vaultwarden-db-creds" }}
+                  {{- if .Values.config.database.existingSecret }}
+                  key: {{ .Values.config.database.userKey | default "username" }}
+                  {{- else }}
+                  key: username
+                  {{- end }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.config.database.existingSecret | default "vaultwarden-db-creds" }}
+                  {{- if .Values.config.database.existingSecret }}
+                  key: {{ .Values.config.database.passwordKey | default "password" }}
+                  {{- else }}
+                  key: password
+                  {{- end }}
+            - name: DATABASE_URL
+              value: {{ .Values.config.database.type }}://$(DB_USER):$(DB_PASSWORD)@{{ .Values.config.database.host }}:{{ .Values.config.database.port }}/{{ .Values.config.database.databaseName }}
+            {{- range $key, $val := .Values.environment }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end}}
+          {{- with .Values.envFrom }}
+          envFrom:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: websocket
+              containerPort: 3012
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 1
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 1
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.storage.enabled }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.config.dataFolder }}
+          {{- end }}
+      {{- if .Values.storage.enabled }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "vaultwarden.fullname" . }}-pvc
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
