@@ -120,9 +120,9 @@ ingress:
         - path: /notifications/hub
           pathType: Prefix
   tls:
-   - secretName: vaultwarden-host-tls
-     hosts:
-       - vaultwarden.example.com
+    - secretName: vaultwarden-host-tls
+      hosts:
+        - vaultwarden.example.com
 
 resources:
   requests:
