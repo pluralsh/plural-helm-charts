@@ -16,7 +16,7 @@ fullnameOverride: ""
 
 config:
   dataFolder: /data
-  domain: vaultwarden.kubeflow-azure.com
+  domain: vaultwarden.example.com
   insecure: false # if vaultwarden is hosted without TLS certificates
   signupEnabled: false
   signupDomainsWhitelist: "plural.sh,onplural.sh" # Controls if new users from a list of comma-separated domains can register, even if SIGNUPS_ALLOWED is set to false
@@ -57,6 +57,13 @@ config:
 # environment variables. See [image docs](https://github.com/dani-garcia/vaultwarden/blob/main/.env.template) for more details.
 environment: {}
 
+storage:
+  enabled: true
+  size: 5Gi
+  storageClassName: ""
+  accessModes:
+  - ReadWriteOnce
+
 envFrom: []
 # - configMapRef:
 #     name: config-map-name
@@ -78,102 +85,8 @@ podAnnotations:
 podSecurityContext: {}
   # fsGroup: 2000
 
-# sidecar containers to run alongside vaultwarden
-sidecar:
-  - name: goofys
-    image: ghcr.io/pluralsh/goofys:0.1.11
-    imagePullPolicy: IfNotPresent
-    # command:
-    #   - "/bin/sh"
-      # - "goofys"
-      # - "-f"
-      # - "endpoint $(ENDPOINT)"
-      # - "stat-cache-ttl $(STAT_CACHE_TTL)"
-      # - "type-cache-ttl $(TYPE_CACHE_TTL)"
-      # - "dir-mode $(DIR_MODE)"
-      # - "file-mode $(FILE_MODE)"
-      # - "uid $(UID)"
-      # - "gid $(GID)"
-      # - "-o $(MOUNT_ACCESS)"
-      # - "$(BUCKET)"
-      # - "$(MOUNT_DIR)"
-    # args:
-    #   - "-c"
-    #   - "goofys -f ${ENDPOINT:+--endpoint $(ENDPOINT)} ${REGION:+--region $(REGION)} ${EXTRA_OPTS:+$(EXTRA_OPTS)} --stat-cache-ttl $(STAT_CACHE_TTL) --type-cache-ttl $(TYPE_CACHE_TTL) --dir-mode $(DIR_MODE) --file-mode $(FILE_MODE) --uid $(UID) --gid $(GID) -o $(MOUNT_ACCESS) $(BUCKET) $(MOUNT_DIR)"
-      # -  "$(EXTRA_OPTS)"
-      # - "f"
-      # - "endpoint $(ENDPOINT)"
-      # - "stat-cache-ttl $(STAT_CACHE_TTL)"
-      # - "type-cache-ttl $(TYPE_CACHE_TTL)"
-      # - "dir-mode $(DIR_MODE)"
-      # - "file-mode $(FILE_MODE)"
-      # - "uid $(UID)"
-      # - "gid $(GID)"
-      # - "o $(MOUNT_ACCESS)"
-      # - "$(BUCKET)"
-      # - "$(MOUNT_DIR)"
-    securityContext:
-      capabilities:
-        drop:
-        - ALL
-      privileged: true
-      # readOnlyRootFilesystem: true
-      runAsNonRoot: true
-      runAsUser: 65534
-    resources:
-      requests:
-        cpu: 100m
-        memory: 100Mi
-      limits:
-        cpu: 100m
-        memory: 100Mi
-    env:
-      - name: S6_READ_ONLY_ROOT
-        value: "1"
-      - name: ENDPOINT
-        value: https://minio.kubeflow-azure.com
-      - name: BUCKET
-        value: vaultwarden-test
-      - name: MOUNT_DIR
-        value: /data
-      - name: DIR_MODE
-        value: "0777"
-      - name: FILE_MODE
-        value: "0777"
-      - name: UID
-        value: "65534"
-      - name: GID
-        value: "0"
-      - name: STAT_CACHE_TTL
-        value: "1m0s"
-      - name: TYPE_CACHE_TTL
-        value: "1m0s"
-      - name: MOUNT_ACCESS
-        value: allow_other
-      - name: EXTRA_OPTS
-        value: "--debug_fuse"
-      - name: AWS_ACCESS_KEY_ID
-        value: vaultwarden-test
-        # valueFrom:
-        #   secretKeyRef:
-        #     name: s3
-        #     key: id
-      - name: AWS_SECRET_ACCESS_KEY
-        value: KGf7AgrzhmIt3XUGkYZZ
-        # valueFrom:
-        #   secretKeyRef: 
-        #     name: s3
-        #     key: secret
-    volumeMounts:
-      - name: data
-        mountPath: /data
-        mountPropagation: Bidirectional
-      - name: s6
-        mountPath: /var/run/s6
-
-
 securityContext:
-  privileged: true # needed for s3 sidecar
+  privileged: false
   capabilities:
     drop:
     - ALL
@@ -198,7 +111,7 @@ ingress:
     nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
     nginx.ingress.kubernetes.io/use-regex: "true"
   hosts:
-    - host: vaultwarden.kubeflow-azure.com
+    - host: vaultwarden.example.com
       paths:
         - path: /
           pathType: Prefix
@@ -209,7 +122,7 @@ ingress:
   tls:
    - secretName: vaultwarden-host-tls
      hosts:
-       - vaultwarden.kubeflow-azure.com
+       - vaultwarden.example.com
 
 resources:
   requests:
