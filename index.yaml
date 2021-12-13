@@ -47,6 +47,17 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/goldilocks-3.3.0/goldilocks-3.3.0.tgz
     version: 3.3.0
+  mlflow-operator:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2021-12-13T13:30:49.797006762Z"
+    description: A Helm chart for Kubernetes
+    digest: c97331c682e6142973ea22f681b88eaf5b42454a8f63792f9b14d62059d2453c
+    name: mlflow-operator
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/mlflow-operator-0.1.0/mlflow-operator-0.1.0.tgz
+    version: 0.1.0
   mysql-operator:
   - apiVersion: v1
     appVersion: v0.5.0
@@ -145,4 +156,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2021-11-09T13:26:36.60455152Z"
+generated: "2021-12-13T13:30:49.797039479Z"
