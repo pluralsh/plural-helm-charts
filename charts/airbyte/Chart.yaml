@@ -10,12 +10,12 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   tags:
     - bitnami-common
-  version: 1.x.x
+  version: 1.10.3
 - condition: postgresql.enabled
   name: postgresql
-  version: 10.x.x
+  version: 10.13.14
   repository: https://charts.bitnami.com/bitnami
 - condition: minio.enabled
   name: minio
-  version: 7.x.x
+  version: 7.3.2
   repository: https://charts.bitnami.com/bitnami
