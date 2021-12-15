@@ -19,6 +19,7 @@ jobs:
       - name: Add dependency chart repos
         run: |
           helm repo add plural https://pluralsh.github.io/plural-helm-charts
+          helm repo add bitnami https://charts.bitnami.com/bitnami
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
