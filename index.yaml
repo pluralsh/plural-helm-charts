@@ -25,6 +25,20 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/airbyte-0.3.0/airbyte-0.3.0.tgz
     version: 0.3.0
+  cloud-provider-equinix-metal:
+  - apiVersion: v2
+    appVersion: v3.3.0
+    created: "2021-12-16T15:44:47.76898779Z"
+    description: Kubernetes Cloud Provider for Equinix Metal
+    digest: 1d04aaab4547cf439c6fc4a6fac86e6cbb3ac7cd21d6d4e1e96f7226478df3f8
+    home: https://metal.equinix.com
+    name: cloud-provider-equinix-metal
+    sources:
+    - https://github.com/equinix/cloud-provider-equinix-metal
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/cloud-provider-equinix-metal-0.1.0/cloud-provider-equinix-metal-0.1.0.tgz
+    version: 0.1.0
   etcd-operator:
   - apiVersion: v2
     appVersion: 0.3.0
@@ -181,4 +195,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2021-12-15T12:49:34.485471143Z"
+generated: "2021-12-16T15:44:47.76900359Z"
