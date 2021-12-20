@@ -54,6 +54,72 @@ spec:
                     description: Name of the Istio Gateway to use for the VirtualService
                     type: string
                 type: object
+              postgres:
+                properties:
+                  instances:
+                    default: 1
+                    description: The number of instances for the Postgres cluster
+                    format: int32
+                    minimum: 1
+                    type: integer
+                  resources:
+                    description: The resource configuration of the Postgres cluster
+                    properties:
+                      limits:
+                        description: The resource requests for the Postgres instances
+                        properties:
+                          limits:
+                            description: The resource requests for the Postgres instances
+                            type: string
+                          requests:
+                            description: The resource requests for the Postgres instances
+                            type: string
+                        required:
+                        - limits
+                        - requests
+                        type: object
+                      requests:
+                        description: The resource requests for the Postgres instances
+                        properties:
+                          limits:
+                            description: The resource requests for the Postgres instances
+                            type: string
+                          requests:
+                            description: The resource requests for the Postgres instances
+                            type: string
+                        required:
+                        - limits
+                        - requests
+                        type: object
+                    type: object
+                  version:
+                    default: "13"
+                    description: The Postgres version to use
+                    enum:
+                    - "9.3"
+                    - "9.4"
+                    - "9.5"
+                    - "9.6"
+                    - "10"
+                    - "11"
+                    - "12"
+                    - "13"
+                    type: string
+                  volume:
+                    description: The number of instances for the Postgres cluster
+                    properties:
+                      size:
+                        default: 10Gi
+                        description: The size of the volume where Postgres will save
+                          it's data
+                        type: string
+                      storageClass:
+                        description: The storage class for the volume used by Postgres
+                        type: string
+                    required:
+                    - size
+                    type: object
+                type: object
               replicas:
                 format: int32
                 type: integer
