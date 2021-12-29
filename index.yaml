@@ -88,6 +88,16 @@ entries:
     version: 3.3.0
   mlflow-operator:
   - apiVersion: v2
+    appVersion: 0.1.5
+    created: "2021-12-29T23:01:36.148803737Z"
+    description: A Helm chart for Kubernetes
+    digest: 8b0fe08f871578b566c42f498ee98bce7bb3ec867b6da94873dbf255184736ac
+    name: mlflow-operator
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/mlflow-operator-0.1.4/mlflow-operator-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
     appVersion: 0.1.4
     created: "2021-12-21T14:25:47.154716399Z"
     description: A Helm chart for Kubernetes
@@ -225,4 +235,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2021-12-21T14:25:47.154735499Z"
+generated: "2021-12-29T23:01:36.148830137Z"
