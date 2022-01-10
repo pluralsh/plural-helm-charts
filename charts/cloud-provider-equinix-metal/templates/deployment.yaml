@@ -58,19 +58,11 @@ spec:
             - '--cloud-provider=equinixmetal'
             - '--leader-elect=false'
             - '--authentication-skip-lookup=true'
-            - '--cloud-config=/etc/cloud-sa/cloud-sa.json'
+            - '--provider-config=/etc/cloud-sa/cloud-sa.json'
           {{- with .Values.additionalCommands }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            {{- if .Values.config.apiKey }}
-            - name: METAL_API_KEY
-              value: {{ .Values.config.apiKey }}
-            {{- end }}
-            {{- if .Values.config.projectID }}
-            - name: METAL_PROJECT_ID
-              value: {{ .Values.config.projectID }}
-            {{- end }}
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
