@@ -28,6 +28,19 @@ entries:
   cloud-provider-equinix-metal:
   - apiVersion: v2
     appVersion: v3.3.0
+    created: "2022-01-10T15:09:06.908141864Z"
+    description: Kubernetes Cloud Provider for Equinix Metal
+    digest: 8cd1289ada5d46446ba114421f067879d6a96e2022fc22584662daa13ff0cccb
+    home: https://metal.equinix.com
+    name: cloud-provider-equinix-metal
+    sources:
+    - https://github.com/equinix/cloud-provider-equinix-metal
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/cloud-provider-equinix-metal-0.1.2/cloud-provider-equinix-metal-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: v3.3.0
     created: "2022-01-10T14:20:09.176239719Z"
     description: Kubernetes Cloud Provider for Equinix Metal
     digest: cd38c2e0fdcba9e7923432557a74935432d0cc2ab91471b38a4c5610633bf75b
@@ -248,4 +261,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-01-10T14:20:09.176267919Z"
+generated: "2022-01-10T15:09:06.908185464Z"
