@@ -2,7 +2,7 @@ apiVersion: v2
 name: cloud-provider-equinix-metal
 description: Kubernetes Cloud Provider for Equinix Metal 
 type: application
-version: "0.1.2"
+version: "0.1.3"
 appVersion: "v3.3.0"
 home: https://metal.equinix.com
 sources:
