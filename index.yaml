@@ -138,6 +138,17 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/goldilocks-3.3.0/goldilocks-3.3.0.tgz
     version: 3.3.0
+  kube-vip:
+  - apiVersion: v2
+    appVersion: v0.4.1
+    created: "2022-01-13T12:50:49.136220036Z"
+    description: A Helm chart for kube-vip
+    digest: b5ece9ffe50e3a358e3fb61784b50254aaf0f8cbda760d34da51b24c964099d3
+    name: kube-vip
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/kube-vip-0.4.2/kube-vip-0.4.2.tgz
+    version: 0.4.2
   mlflow-operator:
   - apiVersion: v2
     appVersion: 0.1.5
@@ -287,4 +298,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-01-10T16:07:14.503227223Z"
+generated: "2022-01-13T12:50:49.136252937Z"
