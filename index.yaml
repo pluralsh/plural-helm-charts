@@ -141,6 +141,16 @@ entries:
   kube-vip:
   - apiVersion: v2
     appVersion: v0.4.1
+    created: "2022-01-17T14:55:16.467791756Z"
+    description: A Helm chart for kube-vip
+    digest: 2a48d1c2063f6af9669196016e8847466658627e988b401353dd70e1cb4f3b4e
+    name: kube-vip
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/kube-vip-0.4.3/kube-vip-0.4.3.tgz
+    version: 0.4.3
+  - apiVersion: v2
+    appVersion: v0.4.1
     created: "2022-01-13T12:50:49.136220036Z"
     description: A Helm chart for kube-vip
     digest: b5ece9ffe50e3a358e3fb61784b50254aaf0f8cbda760d34da51b24c964099d3
@@ -298,4 +308,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-01-13T12:50:49.136252937Z"
+generated: "2022-01-17T14:55:16.467828556Z"
