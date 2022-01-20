@@ -159,6 +159,29 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/kube-vip-0.4.2/kube-vip-0.4.2.tgz
     version: 0.4.2
+  minio:
+  - apiVersion: v1
+    appVersion: RELEASE.2021-09-03T03-56-13Z
+    created: "2022-01-20T11:52:40.356452934Z"
+    description: Multi-Cloud Object Storage
+    digest: e40de2e86afe5e54d5b1bb2ca52ae2445e27a9e70a8139800f22632ce0b9dc85
+    home: https://min.io
+    icon: https://min.io/resources/img/logo/MINIO_wordmark.png
+    keywords:
+    - minio
+    - storage
+    - object-storage
+    - s3
+    - cluster
+    maintainers:
+    - email: dev@minio.io
+      name: MinIO, Inc
+    name: minio
+    sources:
+    - https://github.com/minio/minio
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/minio-3.0.2/minio-3.0.2.tgz
+    version: 3.0.2
   mlflow-operator:
   - apiVersion: v2
     appVersion: 0.1.5
@@ -308,4 +331,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-01-17T14:55:16.467828556Z"
+generated: "2022-01-20T11:52:40.356484634Z"
