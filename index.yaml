@@ -91,6 +91,30 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/cloud-provider-equinix-metal-0.1.0/cloud-provider-equinix-metal-0.1.0.tgz
     version: 0.1.0
+  cluster-autoscaler:
+  - apiVersion: v2
+    appVersion: 1.21.1
+    created: "2022-01-25T16:24:33.070648952Z"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: 6536b7526325663a0295449283686dcdd6a953fd244d778ae17e6a9e716c7a5c
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
+    maintainers:
+    - email: e.bailey@sportradar.com
+      name: yurrriq
+    - email: mgoodness@gmail.com
+      name: mgoodness
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    - email: scott.crooks@gmail.com
+      name: sc250024
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/cluster-autoscaler-9.11.0/cluster-autoscaler-9.11.0.tgz
+    version: 9.11.0
   etcd-operator:
   - apiVersion: v2
     appVersion: 0.3.0
@@ -353,4 +377,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-01-20T13:34:30.686861132Z"
+generated: "2022-01-25T16:24:33.070703052Z"
