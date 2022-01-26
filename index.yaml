@@ -183,6 +183,54 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/kube-vip-0.4.2/kube-vip-0.4.2.tgz
     version: 0.4.2
+  kyverno:
+  - apiVersion: v1
+    appVersion: v1.5.1
+    created: "2022-01-26T13:46:13.316732838Z"
+    description: Kubernetes Native Policy Management
+    digest: 910f2a67a076449a7ff504e39cbdac55860d317d68a9a2e902a359d5b59b5054
+    home: https://kyverno.io/
+    icon: https://github.com/kyverno/kyverno/raw/main/img/logo.png
+    keywords:
+    - kubernetes
+    - nirmata
+    - policy agent
+    - validating webhook
+    - admissions controller
+    kubeVersion: '>=1.10.0-0'
+    maintainers:
+    - name: Nirmata
+      url: https://kyverno.io/
+    name: kyverno
+    sources:
+    - https://github.com/kyverno/kyverno
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/kyverno-v2.1.3/kyverno-v2.1.3.tgz
+    version: v2.1.3
+  kyverno-policies:
+  - apiVersion: v1
+    appVersion: v1.5.1
+    created: "2022-01-26T13:46:13.099318384Z"
+    description: Kubernetes Native Policy Management Policies
+    digest: 129d6eede3c96c1a974ef206011b5b15e5a337976d99ef5351f29b384ce0f7eb
+    home: https://kyverno.io/
+    icon: https://github.com/kyverno/kyverno/raw/main/img/logo.png
+    keywords:
+    - kubernetes
+    - nirmata
+    - policy agent
+    - validating webhook
+    - admissions controller
+    kubeVersion: '>=1.10.0-0'
+    maintainers:
+    - name: Nirmata
+      url: https://kyverno.io/
+    name: kyverno-policies
+    sources:
+    - https://github.com/kyverno/kyverno
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/kyverno-policies-v2.1.3/kyverno-policies-v2.1.3.tgz
+    version: v2.1.3
   minio:
   - apiVersion: v1
     appVersion: RELEASE.2022-01-08T03-11-54Z
@@ -377,4 +425,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-01-25T16:24:33.070703052Z"
+generated: "2022-01-26T13:46:13.31678694Z"
