@@ -1,0 +1,55 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels: {{ include "kyverno.labels" . | nindent 4 }}
+    app: kyverno
+  name: {{ template "kyverno.fullname" . }}
+  namespace: {{ template "kyverno.namespace" . }}
+spec:
+  podSelector:
+    matchLabels:
+      app: kyverno
+  policyTypes:
+  - Ingress
+  {{- if or .Values.networkPolicy.namespaceExpressions .Values.networkPolicy.namespaceLabels .Values.networkPolicy.podExpressions .Values.networkPolicy.podLabels }}
+  ingress:
+  - from:
+    {{- if or .Values.networkPolicy.namespaceExpressions .Values.networkPolicy.namespaceLabels }}
+      - namespaceSelector:
+        {{- with .Values.networkPolicy.namespaceExpressions }}
+          matchExpressions:
+            {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.networkPolicy.namespaceLabels }}
+          matchLabels:
+            {{- range $key, $value := . }}
+            {{ $key | quote }}: {{ $value | quote }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
+    {{- if or .Values.networkPolicy.podExpressions .Values.networkPolicy.podLabels }}
+        podSelector:
+          {{- with .Values.networkPolicy.podExpressions }}
+          matchExpressions:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.networkPolicy.podLabels }}
+          matchLabels:
+            {{- range $key, $value := . }}
+            {{ $key | quote }}: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
+    {{- end }}
+    ports:
+    - protocol: TCP
+      port: 9443 # webhook access
+  # Allow prometheus scrapes for metrics
+  {{- if .Values.metricsService.create }}
+    - protocol: TCP
+      port: {{ .Values.metricsService.port }}
+  {{- end }}
+  {{- else }}
+  ingress: {}
+  {{- end }}
+{{- end }}
