@@ -1,0 +1,192 @@
+image:
+  repository: filecoin/lotus-all-in-one
+  pullPolicy: IfNotPresent
+  tag: v1.13.2
+
+# replicas will increase number of replicas for the statefulset of lotus daemons
+# it should never be used when supplying an external libp2p secret, or with wallets.
+# Sharing libp2p host ids is not a valid configuration, and sharing wallets may lead
+# to nonce issues.
+replicas: 1
+
+prometheusOperatorServiceMonitor: true
+
+# daemonConfig allows for defining the config.toml for the lotus daemon
+# you MUST listen on 1234 for the api and 1347 for the libp2p address
+daemonConfig: |
+  [API]
+    ListenAddress = "/ip4/0.0.0.0/tcp/1234/http"
+  [Libp2p]
+    ListenAddresses = ["/ip4/0.0.0.0/tcp/1347"]
+  [Chainstore]
+    EnableSplitstore = false
+
+# importSnapshot controls the way the lotus repo is initialized prior to starting
+# the daemon.
+# When importSnapshot is disabled (default) the lotus daemon will start with an empty
+# repo and will sync the chain slowly over the network, This is a slow process, so it is
+# highly recommended to enable importSnapshot.
+# "volume" strategy instructs the import container to import from a volume that already
+# exists on the network. If you run archive nodes and wish to manage your own snapshots,
+# this is the strategy that should be used.
+# "url" strategy downloads and imports a snapshot over HTTP. By default, this strategy
+# will download the "lightweight" snapshot from here:
+# https://docs.filecoin.io/get-started/lotus/chain/
+importSnapshot:
+  # when importSnapshot is enabled prior to the daemon starting a snapshot will
+  # be imported into the blockstore iff /var/lib/lotus/datastore/_imported is not
+  # present. after an import /var/lib/lotus/datastore/_imported will be created
+  # resulting in no further imports from occuring till the file is removed.
+  enabled: true
+  strategy: "url"
+
+  # strategy "volume" options:
+  #
+  # if the snapshot can't be found, the import init container will exit with
+  # this status code, if you want the daemon to come back online regardless set
+  # this value to `0`
+  exitCodeOnMissing: 1
+  # this is the claimName of a pvc that will be used for chain importing
+  claimName: chain-exports
+  # exportRelease is the name of the chain-export release
+  exportRelease: ""
+  # when set, the network level chain export will be used instead of a namespaced one
+  network: ""
+  # strategy "url" options:
+  #
+  url: "https://fil-chain-snapshots-fallback.s3.amazonaws.com/mainnet/minimal_finality_stateroots_latest.car"
+
+genesis:
+  # when enabled, a config map can be provided that points to a genesis.car file. The genesis
+  # will be downloaded and made available at /genesis/genesis.car, it is the users jobs to
+  # provides the `--genesis=/genesis/genesis.car` flag to the daemonArgs value.
+  enabled: false
+  # the config map should contain a `genesis` entry which is a full url which provides the genesis
+  configMapName: ""
+
+# pass additional arguments to the lotus daemon, these values will be passed as container
+# arguments to the daemon container.
+# eg:
+# daemonArgs:
+# - --profile=bootstrap
+daemonArgs: []
+
+# set additional environment variables on the lotus daemon
+# eg:
+# daemonEnvs:
+# - name: GOLOG_LOG_FMT
+#   value: json
+daemonEnvs: {}
+
+ports:
+  api: 1234
+  libp2p: 1347
+
+# secrets are broken out into three seperate concerns to make rotation easier
+# all files copied to the keystore are verifed during the init phase to ensure
+# the filename correctly represents the contents.
+# note: all secret files must be raw values (lotus-shed and lotus export provide base16 encoded values)
+# note: all secrets are copied to a memory backed volume during runtime and are deleted when the pod dies
+secrets:
+  # both the jwt and libp2p secrets are managed simiarly. when enabled values
+  # will be copied from the secretName, if the secretName is not defined a secret
+  # will be created. The *_key values should therefore not be changed.
+  # when disabled a temporary jwt and/or libp2p key file will be made for the life of
+  # the pod. when the pod is deleted the jwt and/or libp2p-host will be rotated when the pod
+  # starts again
+  jwt:
+    enabled: false
+    secretName: ""
+    # token will be used to lookup a value in the secret and mounted to $LOTUS_PATH/token
+    # this is the token which will be available through the exec command
+    token_key: jwt-all-privs-token
+    # jwts will be used to lookup a value in the secret and mounted to the $LOTUS_PATH/keystore
+    # the name of the keystore file is an implementation detail of this chart and the version of
+    # lotus it supports
+    jwts_key: auth-jwt-private
+
+  libp2p:
+    enabled: false
+    secretName: ""
+    # libp2p will be used to lookup a value in the secret and mounted to the $LOTUS_PATH/keystore
+    # the name of the keystore file is an implementation detail of this chart and the version of
+    # lotus it supports
+    libp2p_key: libp2p-host
+
+  # all wallets must be managed externally to the deployed pod and should then be
+  # referenced by their secret name. All keys in the secret will be imported.
+  # the secret should contain pairs in the format of <addr>: base64(base16(keyinfo))
+  # where the base64 is the standard k8s requirement.
+  wallets:
+    enabled: false
+    secretName: ""
+
+disputer:
+  # when enabled the `lotus chain disputer start` command will be run in a `disputer` container.
+  enabled: false
+  # walletAddr is passed through to the `disputer` command as the `--from` flag, its value is
+  # used a the wallet for which messages will be sent from when disputing
+  walletAddr: ""
+  # maxFee is passed through to the `disputer` command as the `--max-fee` flag, its value is
+  # the max Filecoin per DisputeWindowedPoSt message
+  # maxFee: 0
+  # pass in additional environment variables to the `lotus chain dispute start` process
+  env: []
+
+persistence:
+  journal:
+    enabled: true
+    size: "200Gi"
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ""
+  datastore:
+    enabled: true
+    # Please also enable splitstore in the daemonConfig section
+    splitStoreEnabled: true
+    # when easyReset is true, if `/var/lib/lotus/datastore/_reset` is present, all files under
+    # /var/lib/lotus/datastore/ will be removed when the pod restarts.
+    easyReset: false
+    # coldStore values are used if splitStoreEnabled: false
+    coldStore:
+      size: "500Gi"
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: ""
+    hotStore:
+      size: "100Gi"
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: ""
+  parameters:
+    enabled: true
+    size: "150Gi"
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ""
+
+additionalVolumes:
+  enabled: false
+  pvcs: []
+
+loadBalancer:
+  enabled: true
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-name: kubeflow-dev-filecoin
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+
+resources:
+  requests:
+    cpu: 7000m
+    memory: 29Gi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+additionalLabels: {}

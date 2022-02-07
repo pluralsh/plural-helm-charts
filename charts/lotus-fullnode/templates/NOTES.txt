@@ -1,0 +1,50 @@
+
+.____           __                 ___________    .__  .__                    .___
+|    |    _____/  |_ __ __  ______ \_   _____/_ __|  | |  |   ____   ____   __| _/____
+|    |   /  _ \   __\  |  \/  ___/  |    __)|  |  \  | |  |  /    \ /  _ \ / __ |/ __ \
+|    |__(  <_> )  | |  |  /\___ \   |     \ |  |  /  |_|  |_|   |  (  <_> ) /_/ \  ___/
+|_______ \____/|__| |____//____  >  \___  / |____/|____/____/___|  /\____/\____ |\___  >
+        \/                     \/       \/                       \/            \/    \/
+
+
+Release ---------- {{ .Release.Name }}
+Namespace -------- {{ .Release.Namespace }}
+Container Repo --- {{ .Values.image.repository }}
+Tag -------------- {{ .Values.image.tag }}
+
+Configuration
+{{- if .Values.importSnapshot.enabled }}
+
+  [Snapshot Importing]
+
+  Snapshot importing is enabled, when this pod is created it will mount a pvc using the
+  claimName of '{{ .Values.importSnapshot.claimName }}'.
+
+  If the snapshot is missing the init container will exit with {{ .Values.importSnapshot.exitCodeOnMissing }}.
+{{- end }}
+{{- if not .Values.secrets.libp2p.enabled }}
+
+  [Libp2p Identity]
+
+  A temporary libp2p identity was created for this lotus node. It will be retained through
+  container crashes, but will be post if the pod is deleted.
+
+  You can find the PeerID of this lotus nodes by running the following command once the
+  pod has completed deployment.
+
+  | $ kubectl -n {{ .Release.Namespace }} exec {{ .Release.Name }}-0 -- lotus net id
+{{- end }}
+{{- if not .Values.secrets.jwt.enabled }}
+
+  [JWT Tokens]
+
+  A temporary jwt was created for this lotus node. It will be retained through container
+  crashes, but will be post if the pod is deleted.
+{{- end }}
+{{- if .Values.secrets.wallets.enabled }}
+
+  [Wallets]
+
+  All wallets from '{{ .Values.secrets.wallets.secretName }}' will be imported.
+{{- end }}
+
