@@ -373,6 +373,60 @@ entries:
           whitelisted: true
       artifacthub.io/license: Apache-2.0
       artifacthub.io/operator: "true"
+      artifacthub.io/operatorCapabilities: Full Lifecycle
+    apiVersion: v2
+    appVersion: v0.6.1
+    created: "2022-03-29T12:41:43.384137357Z"
+    description: A helm chart for Bitpoke Operator for MySQL
+    digest: f01a4ec9926e80e787361d7c365eff17a45a33661ef127228470485e861925a0
+    home: https://www.bitpoke.io/mysql-operator/
+    keywords:
+    - mysql
+    - percona
+    - orchestrator
+    - bitpoke
+    - database
+    kubeVersion: '>= 1.19.0-0'
+    name: mysql-operator
+    sources:
+    - https://github.com/bitpoke/mysql-operator.git
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/mysql-operator-0.6.2/mysql-operator-0.6.2.tgz
+    version: 0.6.2
+  - annotations:
+      artifacthub.io/crds: |
+        - kind: MySQLCluster
+          version: v1alpha1
+          name: mysqlclusters.mysql.presslabs.org
+          displayName: MySQLCluster
+          description: Represents a MySQL cluster managed by Bitpoke's Operator for MySQL.
+      artifacthub.io/crdsExamples: |
+        - apiVersion: v1alpha1
+          kind: MysqlCluster
+          metadata:
+            name: my-cluster
+          spec:
+            replicas: 3
+            secretName: my-secret
+          mysqlConf:
+             innodb-buffer-size: 128M
+          targetSLO:
+            maxSlaveLatency: 10s
+      artifacthub.io/images: |
+        - name: mysql-operator
+          image: docker.io/bitpoke/mysql-operator:latest
+          whitelisted: true
+        - name: orchestrator
+          image: docker.io/bitpoke/mysql-operator-orchestrator:latest
+          whitelisted: true
+        - name: mysql-5.7-sidecar
+          image: docker.io/bitpoke/mysql-operator-sidecar-5.7:latest
+          whitelisted: true
+        - name: mysql-8.0-sidecar
+          image: docker.io/bitpoke/mysql-operator-sidecar-8.0:latest
+          whitelisted: true
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/operator: "true"
       artifacthub.io/operatorCapabilities: full lifecycle
     apiVersion: v2
     appVersion: v0.6.1
@@ -490,4 +544,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-03-21T20:24:46.850982665Z"
+generated: "2022-03-29T12:41:43.384209654Z"
