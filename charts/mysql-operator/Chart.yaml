@@ -9,14 +9,14 @@ keywords:
   - orchestrator
   - bitpoke
   - database
-version: 0.6.1
+version: 0.6.2
 home: https://www.bitpoke.io/mysql-operator/
 sources:
   - https://github.com/bitpoke/mysql-operator.git
 annotations:
   artifacthub.io/license: "Apache-2.0"
   artifacthub.io/operator: "true"
-  artifacthub.io/operatorCapabilities: "full lifecycle"
+  artifacthub.io/operatorCapabilities: "Full Lifecycle"
   artifacthub.io/images: |
     - name: mysql-operator
       image: docker.io/bitpoke/mysql-operator:latest
