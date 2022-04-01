@@ -186,6 +186,29 @@ entries:
   kyverno:
   - apiVersion: v1
     appVersion: v1.5.1
+    created: "2022-04-01T14:41:42.282918995Z"
+    description: Kubernetes Native Policy Management
+    digest: f675327c2bdf4b59fa2d9da7d27caca8ff4216126f51b950c0e2e927c4f41329
+    home: https://kyverno.io/
+    icon: https://github.com/kyverno/kyverno/raw/main/img/logo.png
+    keywords:
+    - kubernetes
+    - nirmata
+    - policy agent
+    - validating webhook
+    - admissions controller
+    kubeVersion: '>=1.10.0-0'
+    maintainers:
+    - name: Nirmata
+      url: https://kyverno.io/
+    name: kyverno
+    sources:
+    - https://github.com/kyverno/kyverno
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/kyverno-v2.1.4/kyverno-v2.1.4.tgz
+    version: v2.1.4
+  - apiVersion: v1
+    appVersion: v1.5.1
     created: "2022-01-26T13:46:13.316732838Z"
     description: Kubernetes Native Policy Management
     digest: 910f2a67a076449a7ff504e39cbdac55860d317d68a9a2e902a359d5b59b5054
@@ -544,4 +567,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-03-29T12:41:43.384209654Z"
+generated: "2022-04-01T14:41:42.282970096Z"
