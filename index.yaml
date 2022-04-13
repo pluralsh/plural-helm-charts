@@ -162,6 +162,21 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/goldilocks-3.3.0/goldilocks-3.3.0.tgz
     version: 3.3.0
+  kserve:
+  - apiVersion: v1
+    appVersion: v0.8.0
+    created: "2022-04-13T09:28:02.246240652Z"
+    description: Helm chart for deploying kserve resources and CRDs
+    digest: ea1eb0d953f031372884650c8bc2f0b500058bb738492818b03553bc08dbf9a4
+    keywords:
+    - kserve
+    - modelmesh
+    name: kserve
+    sources:
+    - http://github.com/kserve/kserve
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/kserve-v0.8.0/kserve-v0.8.0.tgz
+    version: v0.8.0
   kube-vip:
   - apiVersion: v2
     appVersion: v0.4.1
@@ -567,4 +582,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-04-01T14:41:42.282970096Z"
+generated: "2022-04-13T09:28:02.246428555Z"
