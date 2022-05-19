@@ -1,11 +1,11 @@
-{{- $name := "require-run-as-nonroot" }}
+{{- $name := "disallow-privilege-escalation" }}
 {{- if eq (include "kyverno-policies.podSecurityRestricted" (merge (dict "name" $name) .)) "true" }}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: {{ $name }}
   annotations:
-    policies.kyverno.io/title: Require runAsNonRoot
+    policies.kyverno.io/title: Disallow Privilege Escalation
     policies.kyverno.io/category: Pod Security Standards (Restricted)
     {{- if .Values.podSecuritySeverity }}
     policies.kyverno.io/severity: {{ .Values.podSecuritySeverity | quote }}
@@ -14,9 +14,8 @@ metadata:
     kyverno.io/kyverno-version: 1.6.0
     kyverno.io/kubernetes-version: "1.22-1.23"
     policies.kyverno.io/description: >-
-      Containers must be required to run as non-root users. This policy ensures
-      `runAsNonRoot` is set to `true`. A known issue prevents a policy such as this
-      using `anyPattern` from being persisted properly in Kubernetes 1.23.0-1.23.2.
+      Privilege escalation, such as via set-user-ID or set-group-ID file mode, should not be allowed.
+      This policy ensures the `allowPrivilegeEscalation` field is set to `false`.
 spec:
   validationFailureAction: {{ .Values.validationFailureAction }}
   {{- with concat (index .Values "validationFailureActionOverrides" "all") (default list (index .Values "validationFailureActionOverrides" $name)) }}
@@ -24,7 +23,7 @@ spec:
   {{- end }}
   background: {{ .Values.background }}
   rules:
-    - name: run-as-non-root
+    - name: privilege-escalation
       match:
         any:
         - resources:
@@ -36,31 +35,20 @@ spec:
       {{- end }}
       validate:
         message: >-
-          Running as root is not allowed. Either the field spec.securityContext.runAsNonRoot
-          must be set to `true`, or the fields spec.containers[*].securityContext.runAsNonRoot,
-          spec.initContainers[*].securityContext.runAsNonRoot, and spec.ephemeralContainers[*].securityContext.runAsNonRoot
-          must be set to `true`.
-        anyPattern:
-        - spec:
-            securityContext:
-              runAsNonRoot: true
-            =(ephemeralContainers):
-            - =(securityContext):
-                =(runAsNonRoot): true
-            =(initContainers):
-            - =(securityContext):
-                =(runAsNonRoot): true
-            containers:
-            - =(securityContext):
-                =(runAsNonRoot): true
-        - spec:
+          Privilege escalation is disallowed. The fields
+          spec.containers[*].securityContext.allowPrivilegeEscalation,
+          spec.initContainers[*].securityContext.allowPrivilegeEscalation,
+          and spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation
+          must be set to `false`.
+        pattern:
+          spec:
             =(ephemeralContainers):
             - securityContext:
-                runAsNonRoot: true
+                allowPrivilegeEscalation: "false"
             =(initContainers):
             - securityContext:
-                runAsNonRoot: true
+                allowPrivilegeEscalation: "false"
             containers:
             - securityContext:
-                runAsNonRoot: true
+                allowPrivilegeEscalation: "false"
 {{- end }}

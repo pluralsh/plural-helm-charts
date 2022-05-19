@@ -1,17 +1,17 @@
+{{- if .Values.installCRDs }}
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
     config.kubernetes.io/index: '1'
-    internal.config.kubernetes.io/index: '1'
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kyverno
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: v1.6.2
   name: clusterpolicies.kyverno.io
 spec:
   group: kyverno.io
@@ -1382,14 +1382,13 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
     config.kubernetes.io/index: '2'
-    internal.config.kubernetes.io/index: '2'
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kyverno
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: v1.6.2
   name: clusterpolicyreports.wgpolicyk8s.io
 spec:
   group: wgpolicyk8s.io
@@ -1875,14 +1874,13 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
     config.kubernetes.io/index: '3'
-    internal.config.kubernetes.io/index: '3'
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kyverno
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: v1.6.2
   name: clusterreportchangerequests.kyverno.io
 spec:
   group: kyverno.io
@@ -2368,14 +2366,13 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
     config.kubernetes.io/index: '4'
-    internal.config.kubernetes.io/index: '4'
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kyverno
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: v1.6.2
   name: generaterequests.kyverno.io
 spec:
   group: kyverno.io
@@ -2550,14 +2547,13 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
     config.kubernetes.io/index: '5'
-    internal.config.kubernetes.io/index: '5'
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kyverno
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: v1.6.2
   name: policies.kyverno.io
 spec:
   group: kyverno.io
@@ -3928,14 +3924,13 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
     config.kubernetes.io/index: '6'
-    internal.config.kubernetes.io/index: '6'
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kyverno
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: v1.6.2
   name: policyreports.wgpolicyk8s.io
 spec:
   group: wgpolicyk8s.io
@@ -4421,14 +4416,13 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
     config.kubernetes.io/index: '7'
-    internal.config.kubernetes.io/index: '7'
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kyverno
     app.kubernetes.io/instance: kyverno
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/part-of: kyverno
-    app.kubernetes.io/version: latest
+    app.kubernetes.io/version: v1.6.2
   name: reportchangerequests.kyverno.io
 spec:
   group: kyverno.io
@@ -4907,4 +4901,4 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
-
+{{- end }}
