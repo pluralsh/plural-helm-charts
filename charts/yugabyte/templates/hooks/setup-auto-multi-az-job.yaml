@@ -1,0 +1,42 @@
+{{- if .Values.autoMultiAz.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "yugabyte.fullname" . }}-setup-auto-multi-az
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app: "setup-auto-multi-az"
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}"
+    component: "{{ .Values.Component }}"
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      name: "setup-auto-multi-az"
+      labels:
+        app: "setup-auto-multi-az"
+        release: {{ .Release.Name | quote }}
+        chart: "{{ .Chart.Name }}"
+        component: "{{ .Values.Component }}"
+    spec:
+      serviceAccountName: {{ include "yugabyte.serviceAccountName" . }}
+      restartPolicy: Never
+      containers:
+      - name: setup-auto-multi-az
+        image: "{{ .Values.autoMultiAz.image.repository }}:{{ .Values.autoMultiAz.image.tag }}"
+        command:
+        - 'bash'
+        - '/home/yugabyte/bin/setup-auto-multi-az/setup-auto-multi-az.sh'
+        volumeMounts:
+        - name: setup-auto-multi-az-script
+          mountPath: "/home/yugabyte/bin/setup-auto-multi-az"
+      volumes:
+      - name: setup-auto-multi-az-script
+        configMap:
+          name: {{ include "yugabyte.fullname" . }}-setup-auto-multi-az-script
+{{- end }}

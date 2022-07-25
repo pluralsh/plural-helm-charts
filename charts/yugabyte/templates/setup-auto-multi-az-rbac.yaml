@@ -1,0 +1,57 @@
+{{- if .Values.autoMultiAz.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: describe-nodes
+  labels:
+    {{- include "yugabyte.labels" . | indent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: exec-pods
+  labels:
+    {{- include "yugabyte.labels" . | indent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    verbs: [create]
+    resources: [pods/exec]
+---
+# Associate the cluster role with the service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: describe-nodes
+  labels:
+    {{- include "yugabyte.labels" . | indent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: describe-nodes
+subjects:
+- kind: ServiceAccount
+  name: {{ include "yugabyte.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: exec-pods
+  labels:
+    {{- include "yugabyte.labels" . | indent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: exec-pods
+subjects:
+- kind: ServiceAccount
+  name: {{ include "yugabyte.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

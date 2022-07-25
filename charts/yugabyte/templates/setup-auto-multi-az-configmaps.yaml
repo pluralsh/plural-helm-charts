@@ -1,0 +1,73 @@
+{{- $root := . -}}
+{{- if .Values.autoMultiAz.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "yugabyte.fullname" . }}-setup-auto-multi-az-script
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}"
+    component: "{{ .Values.Component }}"
+data:
+  setup-auto-multi-az.sh: |
+    #!/bin/bash
+
+    set -eo pipefail
+
+    {{ range $index := until ( int ( .Values.replicas.master ) ) }}
+    echo "Waiting for Yugabyte pod {{ $index }} to be running"
+    kubectl wait --for=jsonpath='{.status.phase}'=Running -n {{ $root.Release.Namespace }} --timeout 10m pod/{{ $root.Values.oldNamingStyle | ternary $root.name (printf "%s-%s" (include "yugabyte.fullname" $root) "yb-master") }}-{{ $index }}
+    {{ end }}
+
+    # Wait for Yugabyte to become responsive
+    sleep 10
+
+    echo "Getting info about masters\n"
+
+    json=$(curl {{ .Values.oldNamingStyle | ternary .name (printf "%s-%s" (include "yugabyte.fullname" .) "yb-masters") }}:7000/api/v1/masters)
+
+    until [ $json != "{}" ]
+    do
+      echo "waiting for master info to be available"
+      sleep 5
+      json=$(curl {{ .Values.oldNamingStyle | ternary .name (printf "%s-%s" (include "yugabyte.fullname" .) "yb-masters") }}:7000/api/v1/masters)
+    done
+
+    length=$(echo $json | jq ".masters | length")
+
+    placement_strings=$(echo $json | jq --raw-output '.masters[] | "\(.registration.cloud_info.placement_cloud).\(.registration.cloud_info.placement_region).\(.registration.cloud_info.placement_zone)"')
+    placement_string=$(echo $placement_strings | sed -e "s/ /,/g")
+
+    master_addresses=$(echo $json | jq --raw-output '.masters[] | "\(.registration.private_rpc_addresses[].host):\(.registration.private_rpc_addresses[].port)"')
+    master_addresses_string=$(echo $master_addresses | sed -e "s/ /,/g")
+
+    echo "Configuring zone-aware replica placement\n"
+
+    kubectl exec -i -n {{ .Release.Namespace }} {{ .Values.oldNamingStyle | ternary .name (printf "%s-%s" (include "yugabyte.fullname" .) "yb-master") }}-0 -- bash \
+      -c "/home/yugabyte/master/bin/yb-admin \
+        {{- if .Values.tls.enabled }}
+        --certs_dir_name=/opt/certs/yugabyte \
+        {{- end }}
+        --master_addresses $master_addresses_string modify_placement_info $placement_string $length"
+  get-node-info.sh: |
+    #!/bin/bash
+
+    set -eo pipefail
+
+    TOKEN=$(cat ${SERVICEACCOUNT}/token)
+    CACERT=${SERVICEACCOUNT}/ca.crt
+
+    # Get node labels into a json
+    curl -s --cacert ${CACERT} \
+        --header "Authorization: Bearer ${TOKEN}" \
+        -X GET ${APISERVER}/api/v1/nodes/${NODENAME} | jq .metadata.labels > /node/labels.json
+
+    # Extract 'topology.kubernetes.io/zone' and 'topology.kubernetes.io/region' from json
+    NODE_ZONE=$(jq '."topology.kubernetes.io/zone"' -r /node/labels.json)
+    NODE_REGION=$(jq '."topology.kubernetes.io/region"' -r /node/labels.json)
+
+    # and save it into a file in the format suitable for sourcing
+    echo "export NODE_ZONE=${NODE_ZONE}" > /node/location
+    echo "export NODE_REGION=${NODE_REGION}" >> /node/location
+{{- end }}
