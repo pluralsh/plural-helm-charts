@@ -582,4 +582,24 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/vaultwarden-0.1.0/vaultwarden-0.1.0.tgz
     version: 0.1.0
-generated: "2022-04-13T09:28:02.246428555Z"
+  yugabyte:
+  - apiVersion: v1
+    appVersion: 2.15.1.0-b175
+    created: "2022-07-26T13:06:01.650899024Z"
+    description: YugabyteDB is the high-performance distributed SQL database for building
+      global, internet-scale apps.
+    digest: 3d74c57523d50c5adaa7253a7daa6bcb932952d561a3707f5608c4c8bff2b77c
+    home: https://www.yugabyte.com
+    icon: https://avatars0.githubusercontent.com/u/17074854?s=200&v=4
+    maintainers:
+    - email: ram@yugabyte.com
+      name: Ram Sri
+    - email: arnav@yugabyte.com
+      name: Arnav Agarwal
+    name: yugabyte
+    sources:
+    - https://github.com/yugabyte/yugabyte-db
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
+    version: 2.15.1
+generated: "2022-07-26T13:06:01.650951524Z"
