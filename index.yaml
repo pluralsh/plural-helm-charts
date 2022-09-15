@@ -551,6 +551,43 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/opentelemetry-operator-0.3.2/opentelemetry-operator-0.3.2.tgz
     version: 0.3.2
+  sentry:
+  - apiVersion: v2
+    appVersion: 21.5.1
+    created: "2022-09-15T14:01:41.696793239Z"
+    dependencies:
+    - condition: redis.enabled
+      name: redis
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 9.3.2
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 12.0.0
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.0.0
+    - alias: rabbitmq
+      condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 8.9.1
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 10.2.4
+    - condition: nginx.enabled
+      name: nginx
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 6.0.5
+    description: A Helm chart for Kubernetes
+    digest: 4f994c2db1e6585cbacb41d5b37ed9dff30595d60648c60111781182d3666d7f
+    name: sentry
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/sentry-11.3.2/sentry-11.3.2.tgz
+    version: 11.3.2
   tempo-distributed:
   - apiVersion: v2
     appVersion: 1.1.0
@@ -640,4 +677,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-07-27T15:18:41.361272687Z"
+generated: "2022-09-15T14:01:41.696839039Z"
