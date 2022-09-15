@@ -1,0 +1,86 @@
+{{- if .Values.hooks.enabled -}}
+{{- $clickhouseHost := include "sentry.clickhouse.host" . -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "sentry.fullname" . }}-snuba-migrate
+  labels:
+    app: sentry
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "{{ if .Values.hooks.removeOnSuccess }}hook-succeeded,{{ end }}before-hook-creation"
+    "helm.sh/hook-weight": "5"
+spec:
+  template:
+    metadata:
+      name: {{ template "sentry.fullname" . }}-snuba-migrate
+      annotations:
+        checksum/snubaSettingsPy: {{ .Values.config.snubaSettingsPy | sha256sum }}
+        checksum/config.yaml: {{ include (print $.Template.BasePath "/configmap-snuba.yaml") . | sha256sum }}
+        {{- if .Values.snuba.annotations }}
+{{ toYaml .Values.snuba.annotations | indent 8 }}
+        {{- end }}
+        {{- if .Values.hooks.snubaInit.podAnnotations }}
+{{ toYaml .Values.hooks.snubaInit.podAnnotations | indent 8 }}
+        {{- end }}
+      labels:
+        app: sentry
+        release: "{{ .Release.Name }}"
+        {{- if .Values.snuba.podLabels }}
+{{ toYaml .Values.snuba.podLabels | indent 8 }}
+        {{- end }}
+    spec:
+      restartPolicy: Never
+      {{- if .Values.images.snuba.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.images.snuba.imagePullSecrets | indent 8 }}
+      {{- end }}
+      containers:
+      - name: snuba-migrate
+        image: "{{ template "snuba.image" . }}"
+        # command: ["./docker_entrypoint.sh", "replacer","--auto-offset-reset=latest","--max-batch-size", "3"]
+        command:
+          - /bin/bash
+          - -ec
+          - >-
+            {{- if .Values.clickhouse.enabled }}
+            for ((i=0;i<{{ .Values.clickhouse.clickhouse.replicas }};i++)); do
+              export CLICKHOUSE_HOST={{ $clickhouseHost }}-$i.{{ $clickhouseHost }}-headless;
+              snuba migrations migrate --force;
+              {{- if .Values.clickhouse.clickhouse.configmap.remote_servers.replica.backup.enabled }}
+              export CLICKHOUSE_HOST={{ $clickhouseHost }}-replica-$i.{{ $clickhouseHost }}-replica-headless;
+              snuba migrations migrate --force;
+              {{- end }}
+            done
+            {{- else }}
+            export CLICKHOUSE_HOST={{ $clickhouseHost }};
+            snuba migrations migrate --force;
+            {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: debug
+        - name: CLICKHOUSE_SINGLE_NODE
+          value: "true"
+{{ include "sentry.snuba.env" . | indent 8 }}
+{{- if .Values.snuba.migrateJob.env }}
+{{ toYaml .Values.snuba.migrateJob.env | indent 8 }}
+{{- end }}
+        envFrom:
+        - secretRef:
+            name: {{ template "sentry.fullname" . }}-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+{{ toYaml .Values.hooks.snubaInit.resources | indent 10 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "sentry.fullname" . }}-snuba
+{{- end }}

@@ -44,14 +44,14 @@ partition:
 
 tls:
   # Set to true to enable the TLS.
-  enabled: false
+  enabled: true
   nodeToNode: true
   clientToServer: true
   # Set to false to disallow any service with unencrypted communication from joining this cluster
   insecure: false
   # Set enabled to true to use cert-manager instead of providing your own rootCA
   certManager:
-    enabled: false
+    enabled: true
     # Will create own ca certificate and issuer when set to false
     useClusterIssuer: false
     # ignored when useClusterIssuer is false
@@ -116,24 +116,24 @@ serviceAccount:
 domainName: "cluster.local"
 
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/tls-acme: "true"
-    # cert-manager.io/cluster-issuer: letsencrypt-prod
-    # nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
   hosts:
-    - host: yugabyte.example.com
+    - host: yugabyte.kubeflow-aws.com
       paths:
         - path: /
           pathType: ImplementationSpecific
           service:
-            name: yb-masters
+            name: yugabyte-yb-masters
             port: 7000
   tls:
   - secretName: yugabyte-tls
     hosts:
-    - yugabyte.example.com
+    - yugabyte.kubeflow-aws.com
 
 serviceEndpoints:
   - name: "yb-master-ui"
@@ -212,7 +212,7 @@ serviceMonitor:
   ## and one for yb-tserver
   ## https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#servicemonitor
   ##
-  enabled: false
+  enabled: true
   ## interval is the default scrape_interval for all the endpoints
   interval: 30s
   ## extraLabels can be used to add labels to the ServiceMonitors

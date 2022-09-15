@@ -1,0 +1,163 @@
+{{- if .Values.ingress.enabled -}}
+{{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+ name: {{ template "sentry.fullname" . }}
+ labels:
+    app: {{ template "sentry.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+ annotations:
+   {{- range $key, $value := .Values.ingress.annotations }}
+     {{ $key }}: {{ $value | quote }}
+   {{- end }}
+   {{- if and (eq .Values.ingress.regexPathStyle "aws-alb") (.Values.ingress.alb.httpRedirect) }}
+   alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+   {{- end }}
+spec:
+  {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.hostname }}
+      http:
+        paths:
+    {{- if .Values.nginx.enabled }}
+          - path: {{ default "/" .Values.ingress.path | quote }}
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ template "sentry.fullname" . }}-nginx
+                port:
+                  number: {{ .Values.nginx.service.port }}
+              {{- else }}
+              serviceName: {{ template "sentry.fullname" . }}-nginx
+              servicePort: {{ .Values.nginx.service.port }}
+              {{- end }}
+    {{- else if eq (default "nginx" .Values.ingress.regexPathStyle) "aws-alb" }}
+    {{- if .Values.ingress.alb.httpRedirect }}
+          - path: "/*"
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: ssl-redirect
+                port:
+                  number: use-annotation #TODO: this likely doesn't work
+              {{- else }}
+              serviceName: ssl-redirect
+              servicePort: use-annotation
+              {{- end }}
+    {{- end }}
+          - path: /api/0/*
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ template "sentry.fullname" . }}-web
+                port:
+                  number: {{ .Values.service.externalPort }}
+              {{- else }}
+              serviceName: {{ template "sentry.fullname" . }}-web
+              servicePort: {{ .Values.service.externalPort }}
+              {{- end }}
+          - path: /api/*
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ template "sentry.fullname" . }}-relay
+                port:
+                  number: {{ template "relay.port" . }}
+              {{- else }}
+              serviceName: {{ template "sentry.fullname" . }}-relay
+              servicePort: {{ template "relay.port" . }}
+              {{- end }}
+          - path: "/*"
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ template "sentry.fullname" . }}-web
+                port:
+                  number: {{ .Values.service.externalPort }}
+              {{- else }}
+              serviceName: {{ template "sentry.fullname" . }}-web
+              servicePort: {{ .Values.service.externalPort }}
+              {{- end }}
+    {{- else }}
+          - path: {{ default "/" .Values.ingress.path }}api/store
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ template "sentry.fullname" . }}-relay
+                port:
+                  number: {{ template "relay.port" . }}
+              {{- else }}
+              serviceName: {{ template "sentry.fullname" . }}-relay
+              servicePort: {{ template "relay.port" . }}
+              {{- end }}
+        {{- if eq (default "nginx" .Values.ingress.regexPathStyle) "traefik" }}
+          - path: {{ default "/" .Values.ingress.path }}api/{[1-9][0-9]*}/{(.*)}
+        {{- else }}
+          - path: {{ default "/" .Values.ingress.path }}api/[1-9][0-9]*/(.*)
+        {{- end }}
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ template "sentry.fullname" . }}-relay
+                port:
+                  number: {{ template "relay.port" . }}
+              {{- else }}
+              serviceName: {{ template "sentry.fullname" . }}-relay
+              servicePort: {{ template "relay.port" . }}
+              {{- end }}
+          - path: {{ default "/" .Values.ingress.path | quote }}
+            {{- if and .Values.ingress.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .Values.ingress.pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ template "sentry.fullname" . }}-web
+                port:
+                  number: {{ .Values.service.externalPort }}
+              {{- else }}
+              serviceName: {{ template "sentry.fullname" . }}-web
+              servicePort: {{ .Values.service.externalPort }}
+              {{- end }}
+    {{- end }}
+{{- if .Values.ingress.tls }}
+  tls:
+{{ toYaml .Values.ingress.tls | indent 4 }}
+{{- end -}}
+{{- end -}}

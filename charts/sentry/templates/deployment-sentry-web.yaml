@@ -1,0 +1,151 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "sentry.fullname" . }}-web
+  labels:
+    app: {{ template "sentry.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  strategy:
+    type: {{ .Values.sentry.web.strategyType }}
+  selector:
+    matchLabels:
+        app: {{ template "sentry.fullname" . }}
+        release: "{{ .Release.Name }}"
+        role: web
+{{- if not .Values.sentry.web.autoscaling.enabled }}
+  replicas: {{ .Values.sentry.web.replicas }}
+{{- end }}
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: {{ .Values.config.configYml | toYaml | toString | sha256sum }}
+        checksum/sentryConfPy: {{ .Values.config.sentryConfPy | sha256sum }}
+        checksum/config.yaml: {{ include (print $.Template.BasePath "/configmap-sentry.yaml") . | sha256sum }}
+        {{- if .Values.sentry.web.annotations }}
+{{ toYaml .Values.sentry.web.annotations | indent 8 }}
+        {{- end }}
+      labels:
+        app: {{ template "sentry.fullname" . }}
+        release: "{{ .Release.Name }}"
+        role: web
+        {{- if .Values.sentry.web.podLabels }}
+{{ toYaml .Values.sentry.web.podLabels | indent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ template "sentry.serviceAccountName" . }}
+      affinity:
+      {{- if .Values.sentry.web.affinity }}
+{{ toYaml .Values.sentry.web.affinity | indent 8 }}
+      {{- end }}
+      {{- if .Values.sentry.web.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.sentry.web.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.sentry.web.tolerations }}
+      tolerations:
+{{ toYaml .Values.sentry.web.tolerations | indent 8 }}
+      {{- end }}
+      {{- if .Values.images.sentry.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.images.sentry.imagePullSecrets | indent 8 }}
+      {{- end }}
+      {{- if .Values.sentry.web.securityContext }}
+      securityContext:
+{{ toYaml .Values.sentry.web.securityContext | indent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}-web
+        image: "{{ template "sentry.image" . }}"
+        imagePullPolicy: {{ default "IfNotPresent" .Values.images.sentry.pullPolicy }}
+        command: ["sentry", "run", "web"]
+        ports:
+        - containerPort: {{ template "sentry.port" }}
+        env:
+        - name: SNUBA
+          value: http://{{ template "sentry.fullname" . }}-snuba:{{ template "snuba.port" }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ default (include "sentry.postgresql.fullname" .) .Values.postgresql.existingSecret }}
+              key: {{ default "postgresql-password" .Values.postgresql.existingSecretKey }}
+        {{ if and (eq .Values.filestore.backend "gcs") .Values.filestore.gcs.secretName }}
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/run/secrets/google/{{ .Values.filestore.gcs.credentialsFile }}
+        {{ end }}
+        {{ if .Values.sentry.web.customCA }}
+        - name: REQUESTS_CA_BUNDLE
+          value: /etc/pki/ca-trust/custom/{{ default "ca.crt" .Values.sentry.web.customCA.item }}
+        {{ end }}
+{{- if .Values.sentry.web.env }}
+{{ toYaml .Values.sentry.web.env | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: {{ .Values.filestore.filesystem.path }}
+          name: sentry-data
+        {{- if and (eq .Values.filestore.backend "gcs") .Values.filestore.gcs.secretName }}
+        - name: sentry-google-cloud-key
+          mountPath: /var/run/secrets/google
+        {{ end }}
+        {{- if .Values.sentry.web.customCA }}
+        - name: custom-ca
+          mountPath: /etc/pki/ca-trust/custom
+        {{ end }}
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /_health/
+            port: {{ template "sentry.port" }}
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.sentry.web.probeInitialDelaySeconds }}
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /_health/
+            port: {{ template "sentry.port" }}
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.sentry.web.probeInitialDelaySeconds }}
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+{{ toYaml .Values.sentry.web.resources | indent 12 }}
+{{- if .Values.sentry.web.sidecars }}
+{{ toYaml .Values.sentry.web.sidecars | indent 6 }}
+{{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "sentry.fullname" . }}-sentry
+      - name: sentry-data
+      {{- if and (eq .Values.filestore.backend "filesystem") .Values.filestore.filesystem.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "sentry.fullname" . }}-data
+      {{- else }}
+        emptyDir: {}
+      {{ end }}
+      {{- if and (eq .Values.filestore.backend "gcs") .Values.filestore.gcs.secretName }}
+      - name: sentry-google-cloud-key
+        secret:
+          secretName: {{ .Values.filestore.gcs.secretName }}
+      {{ end }}
+      {{- if .Values.sentry.web.customCA }}
+      - name: custom-ca
+        secret:
+{{ toYaml .Values.sentry.web.customCA | indent 10 }}
+      {{ end }}
+      {{- if .Values.sentry.web.priorityClassName }}
+      priorityClassName: "{{ .Values.sentry.web.priorityClassName }}"
+      {{- end }}
+{{- if .Values.sentry.web.volumes }}
+{{ toYaml .Values.sentry.web.volumes | indent 6 }}
+{{- end }}

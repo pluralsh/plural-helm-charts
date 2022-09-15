@@ -1,0 +1,39 @@
+{{- $redisPass := include "sentry.redis.password" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "sentry.fullname" . }}-snuba
+  labels:
+    app: sentry
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  settings.py: |
+    import os
+
+    from snuba.settings import *
+
+    env = os.environ.get
+
+    DEBUG = env("DEBUG", "0").lower() in ("1", "true")
+
+    # Clickhouse Options
+    CLUSTERS[0]["host"] = env("CLICKHOUSE_HOST", {{ include "sentry.clickhouse.host" . | quote }})
+    CLUSTERS[0]["port"] = int({{ include "sentry.clickhouse.port" . }})
+    CLUSTERS[0]["http_port"] = int({{ include "sentry.clickhouse.http_port" . }})
+    CLUSTERS[0]["database"] = env("CLICKHOUSE_DATABASE", "default")
+    CLUSTERS[0]["user"] = env("CLICKHOUSE_USER", "default")
+    CLUSTERS[0]["password"] = env("CLICKHOUSE_PASSWORD", "")
+    # FIXME: Snuba will be able to migrate multi node clusters in the future
+    CLUSTERS[0]["single_node"] = env("CLICKHOUSE_SINGLE_NODE", "false").lower() == "true"
+
+    # Redis Options
+    REDIS_HOST = {{ include "sentry.redis.host" . | quote }}
+    REDIS_PORT = {{ include "sentry.redis.port" . }}
+    {{- if $redisPass }}
+    REDIS_PASSWORD = {{ $redisPass | quote }}
+    {{- end }}
+    REDIS_DB = int(env("REDIS_DB", 1))
+
+{{ .Values.config.snubaSettingsPy | indent 4 }}
