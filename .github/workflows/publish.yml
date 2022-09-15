@@ -20,6 +20,8 @@ jobs:
         run: |
           helm repo add plural https://pluralsh.github.io/plural-helm-charts
           helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add bitnami-archive https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+          helm repo add sentry https://sentry-kubernetes.github.io/charts
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
