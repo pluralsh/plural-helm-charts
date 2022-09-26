@@ -96,7 +96,7 @@ Generate a preflight check script invocation.
 {{- define "yugabyte.preflight_check" -}}
 {{- if not .Values.preflight.skipAll -}}
 if [ -f /home/yugabyte/tools/k8s_preflight.py ]; then
-  PYTHONUNBUFFERED="true" /home/yugabyte/tools/k8s_preflight.py \
+  PYTHONUNBUFFERED="true" /home/yugabyte/tools/k8s_preflight.py dnscheck \
     --addr="{{ .Preflight.Addr }}" \
 {{- if not .Values.preflight.skipBind }}
     --port="{{ .Preflight.Port }}"
