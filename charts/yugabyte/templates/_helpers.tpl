@@ -37,7 +37,6 @@ Generate common labels.
 {{- define "yugabyte.labels" }}
 heritage: {{ .Values.helm2Legacy | ternary "Tiller" (.Release.Service | quote) }}
 release: {{ .Release.Name | quote }}
-chart: {{ .Values.oldNamingStyle | ternary .Chart.Name (include "yugabyte.chart" .) | quote }}
 component: {{ .Values.Component | quote }}
 {{- if .Values.commonLabels}}
 {{ toYaml .Values.commonLabels }}
