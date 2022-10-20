@@ -529,6 +529,45 @@ entries:
   oncall:
   - apiVersion: v2
     appVersion: v1.0.40
+    created: "2022-10-20T10:58:49.04930629Z"
+    dependencies:
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.8.0
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.0.10
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.9.10
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.1.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.10.1
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 6.29.6
+    - condition: ingress-nginx.enabled
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx
+      version: 4.1.4
+    description: Developer-friendly incident response with brilliant Slack integration
+    digest: a6882caa8ab71f6fb75f39e01d62954676f1549274ed486896692047bb5f8980
+    name: oncall
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/oncall-1.0.7/oncall-1.0.7.tgz
+    version: 1.0.7
+  - apiVersion: v2
+    appVersion: v1.0.40
     created: "2022-10-18T13:33:58.085076501Z"
     dependencies:
     - condition: cert-manager.enabled
@@ -837,4 +876,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-10-18T13:33:58.085151002Z"
+generated: "2022-10-20T10:58:49.049369592Z"
