@@ -46,6 +46,7 @@ spec:
             {{- include "snippet.oncall.env" . | nindent 12 }}
             {{- include "snippet.oncall.slack.env" . | nindent 12 }}
             {{- include "snippet.oncall.telegram.env" . | nindent 12 }}
+            {{- include "snippet.oncall.smtp.env" . | nindent 12 }}
             {{- if eq .Values.database.type "mysql" }}
             {{- include "snippet.mysql.env" . | nindent 12 }}
             {{- end }}

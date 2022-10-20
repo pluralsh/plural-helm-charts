@@ -68,17 +68,34 @@ celery:
     #   memory: 128Mi
 
 oncall:
+  # slack configures the Grafana Oncall Slack ChatOps integration.
   slack:
+    # enabled enable the Slack ChatOps integration for the Oncall Engine.
     enabled: false
-    command: ~
+    # command sets the Slack bot slash-command
+    command: oncall
+    # clientId configures the Slack app OAuth2 client ID.
+    # api.slack.com/apps/<yourApp> -> Basic Information -> App Credentials -> Client ID
     clientId: ~
+    # clientSecret configures the Slack app OAuth2 client secret.
+    # api.slack.com/apps/<yourApp> -> Basic Information -> App Credentials -> Client Secret
     clientSecret: ~
-    apiToken: ~
-    apiTokenCommon: ~
+    # signingSecret configures the Slack app signature secret used to sign
+    # requests comming from Slack.
+    # api.slack.com/apps/<yourApp> -> Basic Information -> App Credentials -> Signing Secret
+    signingSecret: ~
   telegram:
     enabled: false
     token: ~
     webhookUrl: ~
+  smtp:
+    enabled: false
+    host: ~
+    port: ~
+    username: ~
+    password: ~
+    tls: ~
+    fromEmail: ~
 
 # Whether to run django database migrations automatically
 migrate:
@@ -91,13 +108,13 @@ env: []
 ingress:
   enabled: true
 #  className: ""
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/issuer: "letsencrypt-prod"
-  tls: 
-    - hosts:
-        - "{{ .Values.base_url }}"
-      secretName: certificate-tls
+  annotations: {}
+    # kubernetes.io/ingress.class: "nginx"
+    # cert-manager.io/issuer: "letsencrypt-prod"
+  tls: []
+    # - hosts:
+    #     - "{{ .Values.base_url }}"
+    #   secretName: certificate-tls
   # Extra paths to prepend to the host configuration. If using something 
   # like an ALB ingress controller, you may want to configure SSL redirects 
   extraPaths: []
@@ -172,7 +189,7 @@ externalMysql:
 # It is recommended to host it separately from this release
 # Set postgresql.enabled = false and configure externalPostgresql
 postgresql:
-  enabled: true
+  enabled: false
   auth:
     database: oncall
 
