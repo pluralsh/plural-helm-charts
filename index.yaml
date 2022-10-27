@@ -165,6 +165,27 @@ entries:
   hasura:
   - apiVersion: v2
     appVersion: v2.13.0-ce
+    created: "2022-10-27T10:03:15.153196212Z"
+    description: A Helm chart to install Hasura graphql engine in a Kubernetes cluster.
+    digest: 212b4883ef2dbf2f3882364e86a8e352deb80c9847b9ac80c699e47a559d6827
+    home: https://hasura-extra.github.io/
+    keywords:
+    - hasura
+    - graphql
+    - hasura-extra
+    maintainers:
+    - email: vuongxuongminh@gmail.com
+      name: vuongxuongminh
+    name: hasura
+    sources:
+    - https://github.com/hasura/graphql-engine
+    - https://github.com/hasura-extra/hasura-extra/tree/charts/hasura
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/hasura-2.7.4/hasura-2.7.4.tgz
+    version: 2.7.4
+  - apiVersion: v2
+    appVersion: v2.13.0-ce
     created: "2022-10-27T09:57:31.617344055Z"
     description: A Helm chart to install Hasura graphql engine in a Kubernetes cluster.
     digest: c11abb6b9c31b5041a88c88cfd7912251970236f9ebc0ca884d1f40f94aa1ddd
@@ -919,4 +940,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-10-27T09:57:31.617391855Z"
+generated: "2022-10-27T10:03:15.153241312Z"
