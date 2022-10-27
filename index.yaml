@@ -162,6 +162,28 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/goldilocks-3.3.0/goldilocks-3.3.0.tgz
     version: 3.3.0
+  hasura:
+  - apiVersion: v2
+    appVersion: v2.13.0-ce
+    created: "2022-10-27T09:48:38.611345708Z"
+    description: A Helm chart to install Hasura graphql engine in a Kubernetes cluster.
+    digest: f58d04821430c93ad51cc3152023113652c19c7fd26c88955a318a8cc49ccfbf
+    home: https://hasura-extra.github.io/
+    keywords:
+    - hasura
+    - graphql
+    - hasura-extra
+    maintainers:
+    - email: vuongxuongminh@gmail.com
+      name: vuongxuongminh
+    name: hasura
+    sources:
+    - https://github.com/hasura/graphql-engine
+    - https://github.com/hasura-extra/hasura-extra/tree/charts/hasura
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/hasura-2.7.1/hasura-2.7.1.tgz
+    version: 2.7.1
   keda:
   - apiVersion: v2
     appVersion: 2.8.1
@@ -876,4 +898,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-10-20T10:58:49.049369592Z"
+generated: "2022-10-27T09:48:38.611942532Z"
