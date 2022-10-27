@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Install Helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v3
 
       - name: Add dependency chart repos
         run: |
@@ -35,7 +35,7 @@ jobs:
         run: |
           git checkout origin/gh-pages index.yaml
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.0
+        uses: helm/chart-releaser-action@v1.4.1
         with: 
           config: "./.github/configs/cr.yaml"
         env:
