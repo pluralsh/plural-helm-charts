@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hasura.fullname" . }}
+  labels:
+  {{- include "hasura.labels" . | nindent 4 }}
+data:
+  HASURA_GRAPHQL_SERVER_HOST: {{ tpl .Values.serverHost $ | quote }}
+  HASURA_GRAPHQL_SERVER_PORT: {{ .Values.serverPort | quote }}
+  HASURA_GRAPHQL_ENABLE_REMOTE_SCHEMA_PERMISSIONS: {{ .Values.enableRemoteSchemaPermission | quote }}
+  HASURA_GRAPHQL_DEV_MODE: {{ .Values.devMode | quote }}
+  HASURA_GRAPHQL_ENABLE_CONSOLE: {{ .Values.enableConsole | quote }}
+  HASURA_GRAPHQL_ENABLED_APIS: {{ .Values.enableApis | quote }}
+  HASURA_GRAPHQL_ENABLE_TELEMETRY: {{ .Values.enableTelemetry | quote }}
+  HASURA_GRAPHQL_LOG_LEVEL: {{ .Values.logLevel | quote }}
+  HASURA_GRAPHQL_ENABLED_LOG_TYPES: {{ .Values.enabledLogsType | quote }}
+  HASURA_GRAPHQL_EVENTS_HTTP_POOL_SIZE: {{ .Values.eventsHttpPoolSize | quote }}
+  HASURA_GRAPHQL_EVENTS_FETCH_BATCH_SIZE: {{ .Values.eventsFetchBatchSize | quote }}
+  HASURA_GRAPHQL_PG_STRIPES: {{ .Values.pgStripes | quote }}
+  HASURA_GRAPHQL_STRINGIFY_NUMERIC_TYPES: {{ .Values.stringifyNumericTypes | quote }}
+  HASURA_GRAPHQL_LIVE_QUERIES_MULTIPLEXED_REFETCH_INTERVAL: {{ .Values.liveQueriesMultiplexedRefetchInterval | quote }}
+  HASURA_GRAPHQL_LIVE_QUERIES_MULTIPLEXED_BATCH_SIZE: {{ .Values.liveQueriesMultiplexedBatchSize | quote }}
+  HASURA_GRAPHQL_ENABLE_ALLOWLIST: {{ .Values.enableAllowlist | quote }}
+  HASURA_GRAPHQL_INFER_FUNCTION_PERMISSIONS: {{ .Values.inferFunctionPermissions | quote }}
+  HASURA_GRAPHQL_SCHEMA_SYNC_POLL_INTERVAL: {{ .Values.schemaSyncPollInterval | quote }}
+  HASURA_GRAPHQL_GRACEFUL_SHUTDOWN_TIMEOUT: {{ .Values.gracefulShutdownTimeout | quote }}
+  HASURA_GRAPHQL_ENABLE_MAINTENANCE_MODE: {{ .Values.enableMaintainceMode | quote }}
+  HASURA_GRAPHQL_CONNECTION_COMPRESSION: {{ .Values.connectionCompression | quote }}
+  HASURA_GRAPHQL_WEBSOCKET_KEEPALIVE: {{ .Values.websocketKeepalive | quote }}
+  HASURA_GRAPHQL_WEBSOCKET_CONNECTION_INIT_TIMEOUT: {{ .Values.websocketConnectionInitTimeout | quote }}
+  HASURA_GRAPHQL_WS_READ_COOKIE: {{ .Values.wsReadCookie | quote }}
+  HASURA_GRAPHQL_METADATA_DATABASE_EXTENSIONS_SCHEMA: {{ .Values.metadataDatabaseExtensionsSchema | quote }}
+  HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION: {{ .Values.defaultNamingConvention | quote }}
+  HASURA_GRAPHQL_ENABLE_LOG_COMPRESSION: {{ .Values.enableLogCompression | quote }}
+  HASURA_GRAPHQL_ENABLE_METADATA_QUERY_LOGGING: {{ .Values.enableMetadataQueryLogging | quote }}
+{{- if .Values.eventsFetchInterval }}
+  HASURA_GRAPHQL_EVENTS_FETCH_INTERVAL: {{ .Values.eventsFetchInterval | quote }}
+{{- end }}
+{{- if .Values.asyncActionsFetchInterval }}
+  HASURA_GRAPHQL_ASYNC_ACTIONS_FETCH_INTERVAL: {{ .Values.asyncActionsFetchInterval | quote }}
+{{- end }}
+{{- if .Values.consoleAssetsDir }}
+  HASURA_GRAPHQL_CONSOLE_ASSETS_DIR: {{ .Values.consoleAssetsDir | quote }}
+{{- end }}
+{{- if .Values.adminInternalErrors }}
+  HASURA_GRAPHQL_ADMIN_INTERNAL_ERRORS: {{ .Values.adminInternalErrors | quote }}
+{{- end }}
+{{- if .Values.corsDomain }}
+  HASURA_GRAPHQL_CORS_DOMAIN: {{ tpl .Values.corsDomain $ | quote }}
+{{- else }}
+  HASURA_GRAPHQL_DISABLE_CORS: 'true'
+{{- end }}
+{{- if .Values.authHook  }}
+  HASURA_GRAPHQL_AUTH_HOOK: {{ tpl .Values.authHook $ | quote }}
+  HASURA_GRAPHQL_AUTH_HOOK_MODE: {{ .Values.authHookMode | quote }}
+{{- end }}
+{{- if .Values.experimentalFeatures }}
+  HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: {{ .Values.experimentalFeatures | quote }}
+{{- end }}
+{{- if .Values.v1BooleanNullCollapse }}
+  HASURA_GRAPHQL_V1_BOOLEAN_NULL_COLLAPSE: {{ .Values.v1BooleanNullCollapse | quote }}
+{{- end }}
+{{- with .Values.extraEnvVarsCM }}
+  {{- tpl ( . | toYaml) $ | nindent 2 }}
+{{- end }}
