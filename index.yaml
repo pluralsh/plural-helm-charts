@@ -757,6 +757,40 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/opentelemetry-operator-0.3.2/opentelemetry-operator-0.3.2.tgz
     version: 0.3.2
+  rabbitmq-cluster-operator:
+  - annotations:
+      category: Infrastructure
+    apiVersion: v2
+    appVersion: 2.0.0
+    created: "2022-11-02T14:02:40.264797529Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: The RabbitMQ Cluster Kubernetes Operator automates provisioning,
+      management, and operations of RabbitMQ clusters running on Kubernetes.
+    digest: 963a69e34448cb5ba72268a54488d76c5cb18811a80e7672aeed559c6fb1807d
+    home: https://github.com/rabbitmq/cluster-operator
+    icon: https://bitnami.com/assets/stacks/rabbitmq-cluster-operator/img/rabbitmq-cluster-operator-stack-220x234.png
+    keywords:
+    - rabbitmq
+    - operator
+    - infrastructure
+    - message queue
+    - AMQP
+    kubeVersion: '>= 1.19.0-0'
+    maintainers:
+    - name: Bitnami
+      url: https://github.com/bitnami/charts
+    name: rabbitmq-cluster-operator
+    sources:
+    - https://github.com/bitnami/containers/tree/main/bitnami/rabbitmq-cluster-operator
+    - https://github.com/rabbitmq/cluster-operator
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/rabbitmq-cluster-operator-3.1.2/rabbitmq-cluster-operator-3.1.2.tgz
+    version: 3.1.2
   sentry:
   - apiVersion: v2
     appVersion: 21.5.1
@@ -940,4 +974,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-10-27T10:03:15.153241312Z"
+generated: "2022-11-02T14:02:40.264866229Z"
