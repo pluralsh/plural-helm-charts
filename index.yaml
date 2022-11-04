@@ -25,6 +25,45 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/airbyte-0.3.0/airbyte-0.3.0.tgz
     version: 0.3.0
+  chatwoot:
+  - apiVersion: v2
+    appVersion: v2.10.0
+    created: "2022-11-04T12:46:36.928304336Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.6.7
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.12.2
+    description: "Open-source customer engagement suite, an alternative to Intercom,
+      Zendesk, Salesforce Service Cloud etc. \U0001F525\U0001F4AC"
+    digest: 5383ff84e0366a5831d12bc888ea21e2076c1ff7738254c032e219f212b27d1f
+    home: https://github.com/chatwoot/charts
+    icon: https://chatwoot-public-assets.s3.amazonaws.com/logo/square.png
+    keywords:
+    - chatwoot
+    - open source
+    - customer support
+    - chat
+    - ruby
+    - rails
+    - crm
+    maintainers:
+    - email: vishnu@chatwoot.com
+      name: vishnu-narayanan
+    - email: sojan@chatwoot.com
+      name: sojan-official
+    name: chatwoot
+    sources:
+    - https://github.com/chatwoot/chatwoot
+    - http://www.chatwoot.com
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/chatwoot-1.0.8/chatwoot-1.0.8.tgz
+    version: 1.0.8
   cloud-provider-equinix-metal:
   - apiVersion: v2
     appVersion: v3.3.0
@@ -1130,4 +1169,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-03T17:43:41.756486232Z"
+generated: "2022-11-04T12:46:36.928382237Z"
