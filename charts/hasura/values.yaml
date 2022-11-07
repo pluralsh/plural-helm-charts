@@ -136,8 +136,20 @@ extraEnvVars: []
 # -- Admin secret key, required to access this instance. This is mandatory when you use webhook or JWT.
 adminSecret: '!ChangeMe!'
 
-# -- Postgres database URL. Example: postgres://admin:mypass@mydomain.com:5432/mydb
-dbUrl: '!ChangeMe!'
+# -- Postgres database information. Used to build the final db url.
+# -- Final URL: postgres://<USERNAME>:<PASSWORD>@<HOSTNAME>:<PORT>/<NAME>
+database:
+  name: ''
+  username: ''
+  password: ''
+  hostname: ''
+  port: ''
+  # If set, it will replace the original HASURA_GRAPHQL_DATABASE_PASSWORD and load it from
+  # the provided secret
+  secret:
+    name: ''
+    passwordKey: ''
+
 
 # -- Set dev mode for GraphQL requests; include the internal key in the errors extensions of the response (if required).
 devMode: 'false'
