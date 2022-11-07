@@ -144,6 +144,12 @@ database:
   password: ''
   hostname: ''
   port: ''
+  # If set, it will replace the original HASURA_GRAPHQL_DATABASE_PASSWORD and load it from
+  # the provided secret
+  secret:
+    name: ''
+    passwordKey: ''
+
 
 # -- Set dev mode for GraphQL requests; include the internal key in the errors extensions of the response (if required).
 devMode: 'false'

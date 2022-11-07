@@ -47,8 +47,15 @@ spec:
           {{- with .Values.extraEnvVars }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if not (empty .Values.database.secret.name) }}
+            - name: HASURA_GRAPHQL_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.secret.name }}
+                  key: {{ .Values.database.secret.passwordKey }}
+          {{- end }}
             - name: HASURA_GRAPHQL_DATABASE_URL
-              value: postgres://$(HASURA_GRAPHQL_DATABASE_USERNAME):$(HASURA_GRAPHQL_DATABASE_PASSWORD)@$(HASURA_GRAPHQL_DATABASE_HOSTNAME):$(HASURA_GRAPHQL_DATABASE_PORT)/$(HASURA_GRAPHQL_DATABASE_NAME)
+              value: postgres://{{ .Values.database.username }}:$(HASURA_GRAPHQL_DATABASE_PASSWORD)@{{ .Values.database.hostname }}:{{ .Values.database.port }}/{{ .Values.database.name }}
           ports:
             - name: http
               containerPort: {{ .Values.serverPort }}
