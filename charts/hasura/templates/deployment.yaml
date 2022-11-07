@@ -38,15 +38,17 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.extraEnvVars }}
-          env:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "hasura.fullname" . }}
             - secretRef:
                 name: {{ include "hasura.fullname" . }}
+          env:
+          {{- with .Values.extraEnvVars }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+            - name: HASURA_GRAPHQL_DATABASE_URL
+              value: postgres://$(HASURA_GRAPHQL_DATABASE_USERNAME):$(HASURA_GRAPHQL_DATABASE_PASSWORD)@$(HASURA_GRAPHQL_DATABASE_HOSTNAME):$(HASURA_GRAPHQL_DATABASE_PORT)/$(HASURA_GRAPHQL_DATABASE_NAME)
           ports:
             - name: http
               containerPort: {{ .Values.serverPort }}
