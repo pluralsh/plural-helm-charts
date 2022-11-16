@@ -1194,6 +1194,23 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/webapp-0.40.41/webapp-0.40.41.tgz
     version: 0.40.41
+  worker:
+  - apiVersion: v2
+    appVersion: 0.40.18
+    created: "2022-11-16T14:49:04.497664055Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-worker
+    digest: 0498b8ac749f05915f27555a2b5909c4b805007adf61ddf860b09e8a829f4ba3
+    name: worker
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/worker-0.40.41/worker-0.40.41.tgz
+    version: 0.40.41
   yugabyte:
   - apiVersion: v1
     appVersion: 2.15.2.0-b87
@@ -1309,4 +1326,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:48:28.480026767Z"
+generated: "2022-11-16T14:49:04.497751957Z"
