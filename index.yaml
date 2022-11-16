@@ -1112,6 +1112,23 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/sentry-11.3.2/sentry-11.3.2.tgz
     version: 11.3.2
+  server:
+  - apiVersion: v2
+    appVersion: 0.40.18
+    created: "2022-11-16T14:47:08.931029215Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-server
+    digest: 396402100bd962da5ea029286bd99822f86e9f70cd855736e9c3135f4439469f
+    name: server
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/server-0.40.1/server-0.40.1.tgz
+    version: 0.40.1
   tempo-distributed:
   - apiVersion: v2
     appVersion: 1.1.0
@@ -1258,4 +1275,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:46:29.715333291Z"
+generated: "2022-11-16T14:47:08.931083915Z"
