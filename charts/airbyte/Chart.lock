@@ -1,12 +1,30 @@
 dependencies:
 - name: common
   repository: https://charts.bitnami.com/bitnami
-  version: 1.10.3
-- name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 10.13.14
-- name: minio
-  repository: https://charts.bitnami.com/bitnami
-  version: 7.3.2
-digest: sha256:169d5b993a45e70d0ef07ab7fb8b01309d94c3a595f53d2934dcd819fd7b9b82
-generated: "2021-12-15T13:44:36.200291573+01:00"
+  version: 1.17.1
+- name: airbyte-bootloader
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+- name: temporal
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+- name: webapp
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+- name: server
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+- name: worker
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+- name: pod-sweeper
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+- name: metrics
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+- name: cron
+  repository: https://pluralsh.github.io/plural-helm-charts
+  version: 0.40.41
+digest: sha256:446957e5635d91f43c5c4abaaba375c9277a694c00d02041aa0bf3cec3019c90
+generated: "2022-11-16T15:54:17.658401+01:00"
