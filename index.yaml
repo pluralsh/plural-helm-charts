@@ -1115,6 +1115,22 @@ entries:
   server:
   - apiVersion: v2
     appVersion: 0.40.18
+    created: "2022-11-16T14:53:22.52580562Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-server
+    digest: 5b5f75c85e8c2f9a23253454893465ebeed3e44f1f95e885777c3253b818bfa0
+    name: server
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/server-0.40.41/server-0.40.41.tgz
+    version: 0.40.41
+  - apiVersion: v2
+    appVersion: 0.40.18
     created: "2022-11-16T14:47:08.931029215Z"
     dependencies:
     - name: common
@@ -1326,4 +1342,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:49:04.497751957Z"
+generated: "2022-11-16T14:53:22.526445927Z"
