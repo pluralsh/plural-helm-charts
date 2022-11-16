@@ -1146,6 +1146,23 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/tempo-distributed-0.9.16/tempo-distributed-0.9.16.tgz
     version: 0.9.16
+  temporal:
+  - apiVersion: v2
+    appVersion: 0.40.18
+    created: "2022-11-16T14:48:03.323620962Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-temporal
+    digest: 76f00fc45e5c0e7b25500f7a71a09e3a9d05cb43eac5d292a0b73c3b5ec867d8
+    name: temporal
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/temporal-0.40.41/temporal-0.40.41.tgz
+    version: 0.40.41
   vaultwarden:
   - apiVersion: v2
     appVersion: 1.21.0
@@ -1275,4 +1292,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:47:08.931083915Z"
+generated: "2022-11-16T14:48:03.323834059Z"
