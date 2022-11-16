@@ -171,6 +171,23 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/cluster-autoscaler-9.11.0/cluster-autoscaler-9.11.0.tgz
     version: 9.11.0
+  cron:
+  - apiVersion: v2
+    appVersion: 0.40.18
+    created: "2022-11-16T14:44:16.110330718Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-cron
+    digest: 03423a60ed5382d56e841c8c7d6c0f91defd919a36d7bb9a632b868dc5d25afe
+    name: cron
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/cron-0.40.41/cron-0.40.41.tgz
+    version: 0.40.41
   etcd-operator:
   - apiVersion: v2
     appVersion: 0.3.0
@@ -1207,4 +1224,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:43:15.72792602Z"
+generated: "2022-11-16T14:44:16.110401619Z"
