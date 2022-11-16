@@ -462,6 +462,23 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/lotus-fullnode-0.3.4/lotus-fullnode-0.3.4.tgz
     version: 0.3.4
+  metrics:
+  - apiVersion: v2
+    appVersion: 0.40.3
+    created: "2022-11-16T14:45:30.038761993Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-metrics
+    digest: 13f50eafd1885c5a13cf9eb567bcbf727316dae6d0d719547ab8f807b6018889
+    name: metrics
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/metrics-0.40.41/metrics-0.40.41.tgz
+    version: 0.40.41
   minio:
   - apiVersion: v1
     appVersion: RELEASE.2022-01-08T03-11-54Z
@@ -1224,4 +1241,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:44:16.110401619Z"
+generated: "2022-11-16T14:45:30.038814394Z"
