@@ -1024,6 +1024,23 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/opentelemetry-operator-0.3.2/opentelemetry-operator-0.3.2.tgz
     version: 0.3.2
+  pod-sweeper:
+  - apiVersion: v2
+    appVersion: 0.39.37-alpha
+    created: "2022-11-16T14:46:29.714957972Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-pod-sweeper
+    digest: d554f127c30fa0401847a04c5eb10bff224ee84611de6ca2014494b845425259
+    name: pod-sweeper
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/pod-sweeper-0.40.41/pod-sweeper-0.40.41.tgz
+    version: 0.40.41
   rabbitmq-cluster-operator:
   - annotations:
       category: Infrastructure
@@ -1241,4 +1258,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:45:30.038814394Z"
+generated: "2022-11-16T14:46:29.715333291Z"
