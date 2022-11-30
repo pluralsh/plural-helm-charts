@@ -1126,6 +1126,42 @@ entries:
   sentry:
   - apiVersion: v2
     appVersion: 21.5.1
+    created: "2022-11-30T16:31:41.965618785Z"
+    dependencies:
+    - condition: redis.enabled
+      name: redis
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 9.3.2
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 12.0.0
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.0.0
+    - alias: rabbitmq
+      condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 8.9.1
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 10.2.4
+    - condition: nginx.enabled
+      name: nginx
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 6.0.5
+    description: A Helm chart for Kubernetes
+    digest: fc358abc34e457caa1c97c253da25ef92e98d9304fe30ab6db2ec4b2e6884e3f
+    name: sentry
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/sentry-11.3.3/sentry-11.3.3.tgz
+    version: 11.3.3
+  - apiVersion: v2
+    appVersion: 21.5.1
     created: "2022-09-15T14:01:41.696793239Z"
     dependencies:
     - condition: redis.enabled
@@ -1390,4 +1426,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2022-11-16T14:56:10.84829467Z"
+generated: "2022-11-30T16:31:41.96580729Z"
