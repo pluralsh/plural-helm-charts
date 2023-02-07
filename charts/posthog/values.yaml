@@ -1,0 +1,2722 @@
+# -- Cloud service being deployed on (example: `aws`, `azure`, `do`, `gcp`, `other`).
+cloud:
+
+# -- Notification email for notifications to be sent to from the PostHog stack
+notificationEmail:
+
+# -- Site url specifies the canonical URL root the site can be accessed using.
+# This is used to e.g. generate shareable links to Dashboards.
+siteUrl:
+
+image:
+  # -- PostHog image repository to use.
+  repository: posthog/posthog
+  # -- PostHog image SHA to use (example: `sha256:20af35fca6756d689d6705911a49dd6f2f6631e001ad43377b605cfc7c133eb4`).
+  sha:
+  # -- PostHog image tag to use (example: `release-1.43.0`).
+  tag:
+  # -- PostHog default image. Do not overwrite, use `image.sha` or `image.tag` instead.
+  default: ":release-1.43.0"
+  # -- PostHog image pull policy.
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## Example:
+  ## pullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  pullSecrets: []
+
+# -- Sentry endpoint to send errors to.
+sentryDSN:
+
+# -- Django SECRET_KEY to use for hashing e.g. passwords. See
+# https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
+posthogSecretKey:
+  # -- Specify that the key should be pulled from an existing secret key. By
+  # default the chart will generate a secret and create a Kubernetes Secret
+  # containing it.
+  existingSecret:
+  # -- Specify the key within the secret from which SECRET_KEY should be taken.
+  existingSecretKey: posthog-secret
+
+# -- Environment variables to inject into every PostHog deployment.
+env: []
+# env:
+#   - name: FOO
+#     value: bar
+
+
+migrate:
+  # -- Whether to install the PostHog migrate job or not.
+  enabled: true
+
+
+events:
+  # -- Whether to install the PostHog events stack or not.
+  enabled: true
+
+  # -- Count of events pods to run. This setting is ignored if `events.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the events stack.
+    enabled: false
+    # -- CPU threshold percent for the events stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the events stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the events stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the events stack, uses `web.env` if empty.
+  env: []
+
+  # -- Container security context for the events stack HorizontalPodAutoscaler.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the events stack HorizontalPodAutoscaler.
+  podSecurityContext:
+    enabled: false
+
+web:
+  # -- Whether to install the PostHog web stack or not.
+  enabled: true
+
+  podAnnotations:
+    # Uncomment these lines if you want Prometheus server to scrape metrics.
+    # prometheus.io/scrape: "true"
+    # prometheus.io/path: /metrics
+    # prometheus.io/port: "8001"
+
+  # -- Count of web pods to run. This setting is ignored if `web.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the web stack.
+    enabled: false
+    # -- CPU threshold percent for the web stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the web stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the web stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Resource limits for web service.
+  resources:
+    {}
+
+  # -- Additional env variables to inject into the web stack deployment.
+  env:
+    # -- Set google oauth 2 key. Requires posthog ee license.
+    - name: SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+      value:
+    # -- Set google oauth 2 secret. Requires posthog ee license.
+    - name: SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
+      value:
+    # -- Set google oauth 2 whitelisted domains users can log in from.
+    - name: SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS
+      value: "posthog.com"
+
+  internalMetrics:
+    # -- Deprecated: Whether to capture information on operation of posthog into posthog, exposed in /instance/status page
+    capture: false
+
+  # -- Node labels for web stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for web stack deployment.
+  tolerations: []
+  # -- Affinity settings for web stack deployment.
+  affinity: {}
+  # :TODO:
+  secureCookies: true
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 0
+    # -- The liveness probe period seconds
+    periodSeconds: 5
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 0
+    # -- The readiness probe period seconds
+    periodSeconds: 30
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 5
+
+  startupProbe:
+    # -- The startup probe failure threshold
+    failureThreshold: 6
+    # -- The startup probe initial delay seconds
+    initialDelaySeconds: 0
+    # -- The startup probe period seconds
+    periodSeconds: 10
+    # -- The startup probe success threshold
+    successThreshold: 1
+    # -- The startup probe timeout seconds
+    timeoutSeconds: 5
+
+  # -- Container security context for web stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for web stack deployment.
+  podSecurityContext:
+    enabled: false
+
+worker:
+  # -- Whether to install the PostHog worker stack or not.
+  enabled: true
+
+  # -- Count of worker pods to run. This setting is ignored if `worker.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the worker stack.
+    enabled: false
+    # -- CPU threshold percent for the worker stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the worker stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the worker stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the worker stack deployment.
+  env: []
+
+  # -- Resource limits for the worker stack deployment.
+  resources:
+    {}
+
+  # -- Node labels for the worker stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for the worker stack deployment.
+  tolerations: []
+  # -- Affinity settings for the worker stack deployment.
+  affinity: {}
+
+  # -- Container security context for the worker stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the worker stack deployment.
+  podSecurityContext:
+    enabled: false
+
+plugins:
+  # -- Whether to install the PostHog plugin-server stack or not.
+  # This service handles data ingestion into ClickHouse, running apps and async
+  # jobs. To scale these components separately, instead use the individual
+  # component deployments, pluginsIngestion, pluginsAsync, pluginsJobs, and
+  # pluginsScheduler.
+  enabled: true
+
+  # -- Count of plugin-server pods to run. This setting is ignored if `plugins.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the plugin stack.
+    enabled: false
+    # -- CPU threshold percent for the plugin-server stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the plugin-server stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the plugin-server stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the plugin-server stack deployment.
+  env: []
+
+  # -- Resource limits for the plugin-server stack deployment.
+  resources:
+    {}
+
+  # -- Node labels for the plugin-server stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for the plugin-server stack deployment.
+  tolerations: []
+  # -- Affinity settings for the plugin-server stack deployment.
+  affinity: {}
+
+  # -- Container security context for the plugin-server stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the plugin-server stack deployment.
+  podSecurityContext:
+    enabled: false
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 10
+    # -- The liveness probe period seconds
+    periodSeconds: 10
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 50
+    # -- The readiness probe period seconds
+    periodSeconds: 30
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 5
+
+  # -- Sentry endpoint to send errors to. Falls back to global sentryDSN
+  sentryDSN:
+
+
+pluginsAsync:
+  # -- Whether to install the PostHog plugin-server async stack or not.
+  # If disabled (default), plugins service handles both ingestion and running of async tasks.
+  # Allows for separate scaling of this service.
+  enabled: false
+
+  # -- Count of plugin-server-async pods to run. This setting is ignored if `pluginsAsync.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the plugin stack.
+    enabled: false
+    # -- CPU threshold percent for the plugin-server stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the plugin-server stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the plugin-server stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the plugin-server stack deployment.
+  env: []
+
+  # -- Resource limits for the plugin-server stack deployment.
+  resources:
+    {}
+
+  # -- Node labels for the plugin-server stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for the plugin-server stack deployment.
+  tolerations: []
+  # -- Affinity settings for the plugin-server stack deployment.
+  affinity: {}
+
+  # -- Container security context for the plugin-server stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the plugin-server stack deployment.
+  podSecurityContext:
+    enabled: false
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 10
+    # -- The liveness probe period seconds
+    periodSeconds: 10
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 50
+    # -- The readiness probe period seconds
+    periodSeconds: 30
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 5
+
+  # -- Sentry endpoint to send errors to. Falls back to global sentryDSN
+  sentryDSN:
+
+
+# -- A deconstructed plugin-server that handles the various workloads of the
+# pipeline separately. For most workloads this will not be needed, rather you
+# can disable the below plugins* and instead just use `plugins.enabled=true`.
+# Note that the behaviour of pluginsAsync is unchanged to maintain backwards
+# compatibility.
+
+pluginsIngestion:
+  # -- Whether to install the PostHog plugin-server ingestion capability as an
+  # individual workload.
+  enabled: false
+
+  # -- Count of plugin-server pods to run. This setting is ignored if `pluginsIngestion.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the plugin stack.
+    enabled: false
+    # -- CPU threshold percent for the plugin-server stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the plugin-server stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the plugin-server stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the plugin-server stack deployment.
+  env: []
+
+  # -- Resource limits for the plugin-server stack deployment.
+  resources:
+    {}
+
+  # -- Node labels for the plugin-server stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for the plugin-server stack deployment.
+  tolerations: []
+  # -- Affinity settings for the plugin-server stack deployment.
+  affinity: {}
+
+  # -- Container security context for the plugin-server stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the plugin-server stack deployment.
+  podSecurityContext:
+    enabled: false
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 10
+    # -- The liveness probe period seconds
+    periodSeconds: 10
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 50
+    # -- The readiness probe period seconds
+    periodSeconds: 30
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 5
+
+  # -- Sentry endpoint to send errors to. Falls back to global sentryDSN
+  sentryDSN:
+
+
+pluginsExports:
+  # -- Whether to install the PostHog plugin-server exports capability as an
+  # individual workload.
+  enabled: false
+
+  # -- Count of plugin-server-async pods to run. This setting is ignored if `pluginsExports.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the plugin stack.
+    enabled: false
+    # -- CPU threshold percent for the plugin-server stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the plugin-server stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the plugin-server stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the plugin-server stack deployment.
+  env: []
+
+  # -- Resource limits for the plugin-server stack deployment.
+  resources:
+    {}
+
+  # -- Node labels for the plugin-server stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for the plugin-server stack deployment.
+  tolerations: []
+  # -- Affinity settings for the plugin-server stack deployment.
+  affinity: {}
+
+  # -- Container security context for the plugin-server stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the plugin-server stack deployment.
+  podSecurityContext:
+    enabled: false
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 10
+    # -- The liveness probe period seconds
+    periodSeconds: 10
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 50
+    # -- The readiness probe period seconds
+    periodSeconds: 30
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 5
+
+  # -- Sentry endpoint to send errors to. Falls back to global sentryDSN
+  sentryDSN:
+
+
+pluginsJobs:
+  # -- Whether to install the PostHog plugin-server jobs capability as an
+  # individual workload.
+  enabled: false
+
+  # -- Count of plugin-server-async pods to run. This setting is ignored if `pluginsJobs.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the plugin stack.
+    enabled: false
+    # -- CPU threshold percent for the plugin-server stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the plugin-server stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the plugin-server stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the plugin-server stack deployment.
+  env: []
+
+  # -- Resource limits for the plugin-server stack deployment.
+  resources:
+    {}
+
+  # -- Node labels for the plugin-server stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for the plugin-server stack deployment.
+  tolerations: []
+  # -- Affinity settings for the plugin-server stack deployment.
+  affinity: {}
+
+  # -- Container security context for the plugin-server stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the plugin-server stack deployment.
+  podSecurityContext:
+    enabled: false
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 10
+    # -- The liveness probe period seconds
+    periodSeconds: 10
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 50
+    # -- The readiness probe period seconds
+    periodSeconds: 30
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 5
+
+  # -- Sentry endpoint to send errors to. Falls back to global sentryDSN
+  sentryDSN:
+
+pluginsScheduler:
+  # -- Whether to install the PostHog plugin-server scheduler capability as an
+  # individual workload.
+  enabled: false
+
+  # -- Count of plugin-server-async pods to run. This setting is ignored if `pluginsScheduler.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the plugin stack.
+    enabled: false
+    # -- CPU threshold percent for the plugin-server stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the plugin-server stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the plugin-server stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  rollout:
+    # The max surge in pods during a rollout
+    maxSurge: 25%
+    # The max unavailable during a rollout
+    maxUnavailable: 25%
+
+  # -- Additional env variables to inject into the plugin-server stack deployment.
+  env: []
+
+  # -- Resource limits for the plugin-server stack deployment.
+  resources:
+    {}
+
+  # -- Node labels for the plugin-server stack deployment.
+  nodeSelector: {}
+  # -- Toleration labels for the plugin-server stack deployment.
+  tolerations: []
+  # -- Affinity settings for the plugin-server stack deployment.
+  affinity: {}
+
+  # -- Container security context for the plugin-server stack deployment.
+  securityContext:
+    enabled: false
+  # -- Pod security context for the plugin-server stack deployment.
+  podSecurityContext:
+    enabled: false
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 10
+    # -- The liveness probe period seconds
+    periodSeconds: 10
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 50
+    # -- The readiness probe period seconds
+    periodSeconds: 30
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 5
+
+  # -- Sentry endpoint to send errors to. Falls back to global sentryDSN
+  sentryDSN:
+
+
+email:
+  # -- SMTP service host.
+  host:
+  # -- SMTP service port.
+  port:
+  # -- SMTP service user.
+  user:
+  # -- SMTP service password.
+  password:
+  # -- Name of an existing Kubernetes secret object containing the SMTP service password.
+  existingSecret: ""
+  # -- Name of the key pointing to the password in your Kubernetes secret.
+  existingSecretKey: ""
+  # -- Use TLS to authenticate to the SMTP service.
+  use_tls: true
+  # -- Use SSL to authenticate to the SMTP service.
+  use_ssl:
+  # -- Outbound email sender to use.
+  from_email:
+
+
+saml:
+  # -- Whether password-based login is disabled and users automatically redirected to SAML login. Requires SAML to be properly configured.
+  enforced: false
+  # -- Whether SAML should be completely disabled. If set at build time, this will also prevent SAML dependencies from being installed.
+  disabled: false
+  # -- Entity ID from your SAML IdP.
+  # entity_id: "id-from-idp-5f9d4e-47ca-5080"
+  entity_id:
+  # -- Assertion Consumer Service URL from your SAML IdP.
+  # acs_url: "https://mysamlidp.com/saml2"
+  acs_url:
+  # -- Public X509 certificate from your SAML IdP to validate SAML assertions
+  # x509_cert: |
+  # MIID3DCCAsSgAwIBAgIUdriHo8qmAU1I0gxsI7cFZHmna38wDQYJKoZIhvcNAQEF
+  # BQAwRTEQMA4GA1UECgwHUG9zdEhvZzEVMBMGA1UECwwMT25lTG9naW4gSWRQMRow
+  # GAYDVQQDDBFPbmVMb2dpbiBBY2NvdW50IDAeFw0yMTA4MTYyMTUyMzNaFw0yNjA4
+  # MTYyMTUyMzNaMEUxEDAOBgNVBAoMB1Bvc3RIb2cxFTATBgNVBAsMDE9uZUxvZ2lu
+  # IElkUDEaMBgGA1UEAwwRT25lTG9naW4gQWNjb3VudCAwggEiMA0GCSqGSIb3DQEB
+  # AQUAA4IBDwAwggEKAoIBAQDEfUWFIU38ztF2EgijVsIbnlB8OIwkjZU8c34B9VwZ
+  # BQQUSxbrkuT9AX/5O27G04TBCHFZsXRId+ABSjVo8daCPu0d38Quo9KS3V3627Nw
+  # YcTYsje95lB02E/PgfiEQ6ZGCOV0P4xY9C99d26PoYTcoMT1S73jDDMOFtoD5WXG
+  # ZsKqwBks1jbLkv6RYoFBlZX00aGzOXDzUXI59/0c15KR4EzgTad0t6CU7X0HZ2Qf
+  # xGUiRb7hDLvgSby0SzpQpYUyYDnN9aSNYzpu1hiyIqrhQ7kZNy7LyGBz0UIuIImF
+  # pF6A3bzzrR4wdacFY9U0vmqFXXcepxuT5p2UyAxwbLeDAgMBAAGjgcMwgcAwDAYD
+  # VR0TAQH/BAIwADAdBgNVHQ4EFgQURLVVKanZPoXGEfYr1HmlaCEoD54wgYAGA1Ud
+  # IwR5MHeAFES1VSmp2T6FxhH2K9R5pWghKA+eoUmkRzBFMRAwDgYDVQQKDAdQb3N0
+  # SG9nMRUwEwYDVQQLDAxPbmVMb2dpbiBJZFAxGjAYBgNVBAMMEU9uZUxvZ2luIEFj
+  # Y291bnQgghR2uIejyqYBTUjSDGwjtwVkeadrfzAOBgNVHQ8BAf8EBAMCB4AwDQYJ
+  # KoZIhvcNAQEFBQADggEBALP5lhlcV8avbnVnqO7PBtlS2mVOJ2B7obm50OaJCbRh
+  # t0I/dcNssWhT31/zmtNfKtrFicNImlKhdirApxpIp1WLEFY01a40GLmO6FG/WVvB
+  # EzwXonWP+cP8jYQnqZ15JkuHjP3DYJuOak2GqAJAfaGO67q6IkRZzRq6UwEUgNJD
+  # TlcsJAFaJDrcw07TY3mRFragdzGC7Xt/CM6r/0seY3+VBwMUMiJlvawcyQxap7om
+  # EdgmQkJA8Dk6f+geI+U7jV3orkPiofBJi9K6cp5Fd9usut8jwi3GYg2wExNGbhF4
+  # wlMD1LOhymQGBnTXPk+000nkBnYdqEnqXzVpDiCG1Pc=
+  x509_cert:
+  # -- Name of attribute that contains the permanent ID of the user in SAML assertions.
+  # attr_permanent_id: "nameID"
+  attr_permanent_id:
+  # -- Name of attribute that contains the first name of the user in SAML assertions.
+  # attr_first_name: "firstName"
+  attr_first_name:
+  # -- Name of attribute that contains the last name of the user in SAML assertions.
+  # attr_last_name: "lastName"
+  attr_last_name:
+  # -- Name of attribute that contains the email of the user in SAML assertions.
+  # attr_email: "email"
+  attr_email:
+
+
+service:
+  # -- PostHog service name.
+  name: posthog
+  # -- PostHog service type.
+  type: NodePort
+  externalPort: 8000
+  internalPort: 8000
+
+  # -- PostHog service annotations.
+  annotations: {}
+
+
+###
+###
+### ---- CERT-MANAGER ----
+###
+###
+cert-manager:
+  # -- Whether to install `cert-manager` resources.
+  enabled: false
+  # -- Whether to install `cert-manager` CRDs.
+  installCRDs: true
+  # -- Who to email if the certificate is about to expire
+  # -- Defaults to `notificationEmail` if it is available
+  # -- Base default is noreply@<your-ingress-hostname>
+  email: null
+
+  #
+  # [Workaround] - do not use the local DNS for the 'cert-manager' pods since it would return local IPs
+  # and break self checks.
+  #
+  # For more info see:
+  #   - https://github.com/jetstack/cert-manager/issues/1292
+  #   - https://github.com/jetstack/cert-manager/issues/3238
+  #   - https://github.com/jetstack/cert-manager/issues/4286
+  #   - https://github.com/compumike/hairpin-proxy
+  #
+  # This has some side effects, like 'cert-manager' pods not being able to resolve cluster-local names,
+  # but so far this has not caused issues (and we don't expect it to do so).
+  #
+  podDnsPolicy: None
+  podDnsConfig:
+    nameservers:
+      - 8.8.8.8
+      - 1.1.1.1
+      - 208.67.222.222
+
+
+###
+###
+### ---- INGRESS ----
+###
+###
+ingress:
+  # -- Enable ingress controller resource
+  enabled: true
+  # -- Ingress handler type. Defaults to `nginx` if nginx is enabled and to `clb` on gcp.
+  type:
+  # -- URL to address your PostHog installation. You will need to set up DNS after installation
+  hostname:
+  gcp:
+    # -- Specifies the name of the global IP address resource to be associated with the google clb
+    ip_name: "posthog"
+    # -- If true, will force a https redirect when accessed over http
+    forceHttps: true
+    # -- Specifies the name of the tls secret to be used by the ingress. If not specified a managed certificate will be generated.
+    secretName: ""
+  # -- Whether to enable letsencrypt. Defaults to true if hostname is defined and nginx and cert-manager are enabled otherwise false.
+  letsencrypt:
+  nginx:
+    # -- Whether nginx is enabled
+    enabled: false
+    # -- Whether to redirect to TLS with nginx ingress.
+    redirectToTLS: true
+  # -- Extra annotations
+  annotations: {}
+  # -- TLS secret to be used by the ingress.
+  secretName:
+
+
+ingress-nginx:
+  controller:
+    config:
+      # -- Whether to forward "X-Forwarded-*" headers to upstream services.
+      # -- This is needed to ensure the PostHog application knows e.g. if the
+      # -- downstream proxy is using a secure connection. See the official
+      # -- [ingress-nginx documentation](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#use-forwarded-headers)
+      use-forwarded-headers: "true"
+
+      # Use JSON format for logs, such that we can easily parse them in e.g. Promtail
+      #
+      # We also add in:
+      #
+      #  1. the X-Forwarded-For header so we can correlate if requests are from
+      #     the same ip.
+      #  2. a correlation_id that for the purposes of having functional defaults
+      #     is the NGINX generated $request_id. If you are using e.g. an AWS ALB
+      #     in front of ingress then consider instead changing this to
+      #     `$http_x_amzn_trace_id`.
+      #
+      log-format-escape-json: "true"
+      log-format-upstream: '{
+          "time": "$time_iso8601",
+          "remote_addr": "$proxy_protocol_addr",
+          "request_id": "$request_id",
+          "correlation_id": "$request_id",
+          "remote_user": "$remote_user",
+          "bytes_sent": $bytes_sent,
+          "request_time": $request_time,
+          "status": $status,
+          "host": "$host",
+          "request_proto": "$server_protocol",
+          "uri": "$uri",
+          "request_query": "$args",
+          "request_length": $request_length,
+          "duration": $request_time,
+          "method": "$request_method",
+          "http_referrer": "$http_referer",
+          "http_user_agent": "$http_user_agent",
+          "http_x_forwarded_for": "$http_x_forwarded_for"
+        }'
+
+    # Pass NGINX generated $request_id as X-Correlation-ID such that downstreams can use it
+    # for logging. See
+    # https://django-structlog.readthedocs.io/en/latest/events.html#request-bound-metadata
+    # for how django_structlog uses it.
+    #
+    # If using behind an AWS ALB you can set this to $http_x_amzn_trace_id such
+    # that you can correlate with ALB level requests as well.
+    proxySetHeaders:
+      X-Correlation-ID: $request_id
+
+    # Uncomment those lines if you want Prometheus server to scrape NGINX Ingress controller pods metrics.
+    # metrics:
+    #   enabled: true
+    #   service:
+    #     annotations:
+    #       prometheus.io/port: "10254"
+    #       prometheus.io/scrape: "true"
+
+
+###
+###
+### ---- POSTGRESQL ----
+###
+###
+postgresql:
+  # -- Whether to deploy a PostgreSQL server to satisfy the applications requirements. To use an external PostgreSQL instance set this to `false` and configure the `externalPostgresql` parameters.
+  enabled: true
+  # -- Name override for PostgreSQL app.
+  nameOverride: posthog-postgresql
+  # -- PostgreSQL database name.
+  postgresqlDatabase: posthog
+  # -- PostgreSQL database password.
+  postgresqlPassword: postgres
+  persistence:
+    # -- Enable persistence using PVC.
+    enabled: true
+    # -- PVC Storage Request for PostgreSQL volume.
+    size: 10Gi
+
+externalPostgresql:
+  # -- External PostgreSQL service host.
+  postgresqlHost:
+  # -- External PostgreSQL service port.
+  postgresqlPort: 5432
+  # -- External PostgreSQL service database name.
+  postgresqlDatabase:
+  # -- External PostgreSQL service user.
+  postgresqlUsername:
+  # -- External PostgreSQL service password. Either this or `externalPostgresql.existingSecret` must be set.
+  postgresqlPassword:
+  # -- Name of an existing Kubernetes secret object containing the PostgreSQL password
+  existingSecret:
+  # -- Name of the key pointing to the password in your Kubernetes secret
+  existingSecretPasswordKey: postgresql-password
+  # -- Wether the external PostgreSQL instance is using pgbouncer
+  usingPgbouncer: false
+  # -- The PostgreSQL SSL mode to use. See https://www.postgresql.org/docs/current/libpq-ssl.html for more information.
+  mode: ""
+
+
+###
+###
+### ---- PGBOUNCER ----
+###
+###
+pgbouncer:
+  # -- Whether to deploy a PgBouncer service to satisfy the applications requirements.
+  enabled: true
+
+  exporter:
+    # -- Whether to install a Prometheus export as a sidecar
+    enabled: false
+    port: 9127
+    image:
+      repository: prometheuscommunity/pgbouncer-exporter
+      tag: v0.4.1
+      pullPolicy: IfNotPresent
+      ## Optionally specify an array of imagePullSecrets.
+      ## Secrets must be manually created in the namespace.
+      ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+      ## Example:
+      ## pullSecrets:
+      ##   - myRegistryKeySecretName
+      ##
+      pullSecrets: []
+
+    # -- Resource limits for pgbouncer-exporter.
+    resources: {}
+
+    # -- Container security context for pgbouncer-exporter.
+    securityContext:
+      enabled: false
+
+  # -- Count of pgbouncer pods to run. This setting is ignored if `pgbouncer.hpa.enabled` is set to `true`.
+  replicacount: 1
+
+  hpa:
+    # -- Whether to create a HorizontalPodAutoscaler for the pgbouncer stack.
+    enabled: false
+    # -- CPU threshold percent for the pgbouncer stack HorizontalPodAutoscaler.
+    cputhreshold: 60
+    # -- Min pods for the pgbouncer stack HorizontalPodAutoscaler.
+    minpods: 1
+    # -- Max pods for the pgbouncer stack HorizontalPodAutoscaler.
+    maxpods: 10
+    # -- Set the HPA behavior. See
+    # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    # for configuration options
+    behavior:
+
+  # -- Additional env variables to inject into the pgbouncer stack deployment.
+  env:
+    - name: PGBOUNCER_PORT
+      value: "6543"
+    - name: PGBOUNCER_MAX_CLIENT_CONN
+      value: "1000"
+    - name: PGBOUNCER_POOL_MODE
+      value: transaction
+    - name: PGBOUNCER_IGNORE_STARTUP_PARAMETERS
+      value: extra_float_digits
+
+  # -- Resource limits for the pgbouncer stack deployment.
+  resources: {}
+
+  # -- Node labels for the pgbouncer stack deployment.
+  nodeSelector: {}
+
+  # -- Toleration labels for the pgbouncer stack deployment.
+  tolerations: []
+
+  # -- Affinity settings for the pgbouncer stack deployment.
+  affinity: {}
+
+  # -- Container security context for the pgbouncer stack deployment.
+  securityContext:
+    enabled: false
+
+  # -- Pod security context for the pgbouncer stack deployment.
+  podSecurityContext:
+    enabled: false
+
+  readinessProbe:
+    # -- The readiness probe failure threshold
+    failureThreshold: 3
+    # -- The readiness probe initial delay seconds
+    initialDelaySeconds: 10
+    # -- The readiness probe period seconds
+    periodSeconds: 5
+    # -- The readiness probe success threshold
+    successThreshold: 1
+    # -- The readiness probe timeout seconds
+    timeoutSeconds: 2
+
+  livenessProbe:
+    # -- The liveness probe failure threshold
+    failureThreshold: 3
+    # -- The liveness probe initial delay seconds
+    initialDelaySeconds: 60
+    # -- The liveness probe period seconds
+    periodSeconds: 10
+    # -- The liveness probe success threshold
+    successThreshold: 1
+    # -- The liveness probe timeout seconds
+    timeoutSeconds: 2
+
+  image:
+    repository: bitnami/pgbouncer
+    tag: 1.17.0
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+
+  service:
+    type: ClusterIP
+    annotations: {}
+
+  ## -- PgBouncer pod(s) annotation.
+  podAnnotations: {}
+
+
+###
+###
+### ---- REDIS ----
+###
+###
+redis:
+  # -- Whether to deploy a Redis server to satisfy the applications requirements. To use an external redis instance set this to `false` and configure the `externalRedis` parameters.
+  enabled: true
+
+  nameOverride: "posthog-redis"
+
+  fullnameOverride: ""
+
+  architecture: standalone
+
+  auth:
+    # -- Enable Redis password authentication.
+    enabled: false
+
+    # -- Redis password.
+    #    Defaults to a random 10-character alphanumeric string if not set.
+    #    NOTE: ignored unless `redis.auth.enabled` is `true` or if `redis.auth.existingSecret` is set.
+    #
+    password: ""
+
+    # -- The name of an existing secret containing the Redis credential to use.
+    #    NOTE: ignored unless `redis.auth.enabled` is `true`.
+    #          When it is set, the previous `redis.auth.password` parameter is ignored.
+    #
+    existingSecret: ""
+
+    # -- Password key to be retrieved from existing secret.
+    #    NOTE: ignored unless `redis.auth.existingSecret` parameter is set.
+    #
+    existingSecretPasswordKey: ""
+
+  master:
+    persistence:
+      # -- Enable data persistence using PVC.
+      enabled: true
+
+      # -- Persistent Volume size.
+      size: 5Gi
+    # -- Array with additional command line flags for Redis master.
+    extraFlags:
+      ## The maxmemory configuration directive is used in order to configure Redis to use a specified
+      ## amount of memory for the data set. Setting maxmemory to zero results into no memory limits
+      ## see https://redis.io/topics/lru-cache for more details
+      - "--maxmemory 400mb"
+      ## The exact behavior Redis follows when the maxmemory limit is reached is configured using the
+      ## maxmemory-policy configuration directive
+      ## allkeys-lru: evict keys by trying to remove the less recently used (LRU) keys first, in order
+      ## to make space for the new data added
+      - "--maxmemory-policy allkeys-lru"
+
+externalRedis:
+  # -- External Redis host to use.
+  host: ""
+  # -- External Redis port to use.
+  port: 6379
+  # -- Password for the external Redis. Ignored if `externalRedis.existingSecret` is set.
+  password: ""
+  # -- Name of an existing Kubernetes secret object containing the Redis password.
+  existingSecret: ""
+  # -- Name of the key pointing to the password in your Kubernetes secret.
+  existingSecretPasswordKey: ""
+
+
+###
+###
+### ---- KAFKA ----
+###
+###
+kafka:
+  # -- Whether to deploy Kafka as part of this release. To use an external Kafka instance set this to `false` and configure the `externalKafka` values.
+  enabled: true
+
+  nameOverride: posthog-kafka
+
+  fullnameOverride: ""
+
+  # -- A size-based retention policy for logs.
+  logRetentionBytes: _15_000_000_000
+
+  # -- The minimum age of a log file to be eligible for deletion due to age.
+  logRetentionHours: 24
+
+  # -- The default number of log partitions per topic.
+  numPartitions: 1
+
+  persistence:
+    # - Enable data persistence using PVC.
+    enabled: true
+    # -- PVC Storage Request for Kafka data volume.
+    size: 20Gi
+
+  zookeeper:
+    # -- Switch to enable or disable the ZooKeeper helm chart. !!! Please DO NOT override this (this chart installs Zookeeper separately) !!!
+    enabled: false
+
+  externalZookeeper:
+    # -- List of external zookeeper servers to use.
+    servers:
+      - posthog-posthog-zookeeper:2181
+
+externalKafka:
+  # - External Kafka brokers. Ignored if `kafka.enabled` is set to `true`. Multiple brokers can be provided as array/list.
+  brokers: []
+
+
+###
+###
+### ---- ZOOKEEPER ----
+###
+###
+zookeeper:
+  # -- Whether to deploy Zookeeper as part of this release.
+  enabled: true
+
+  nameOverride: posthog-zookeeper
+
+  # -- Number of ZooKeeper nodes
+  replicaCount: 1
+
+  autopurge:
+    # -- The time interval (in hours) for which the purge task has to be triggered
+    purgeInterval: 1
+
+  metrics:
+    # -- Enable Prometheus to access ZooKeeper metrics endpoint.
+    enabled: false
+    service:
+      annotations:
+        "prometheus.io/scrape": "false" # let's make Prometheus skip the scraping of the
+                                        # service as we already scrape the pods (see below
+                                        # and https://github.com/bitnami/charts/issues/10101)
+
+  ## -- Zookeeper pod(s) annotation.
+  podAnnotations:
+    # Uncomment those lines if you want Prometheus server to scrape Zookeeper pods metrics.
+    # prometheus.io/scrape: "true"
+    # prometheus.io/path: /metrics
+    # prometheus.io/port: "9141"
+
+
+###
+###
+### ---- CLICKHOUSE ----
+###
+###
+clickhouse:
+  # -- Whether to install clickhouse. If false, `clickhouse.host` must be set
+  enabled: true
+  # -- Which namespace to install clickhouse and the `clickhouse-operator` to (defaults to namespace chart is installed to)
+  namespace:
+  # -- Clickhouse cluster
+  cluster: posthog
+  # -- Clickhouse database
+  database: posthog
+  # -- Clickhouse user
+  user: admin
+  # -- Clickhouse password
+  password: a1f31e03-c88e-4ca6-a2df-ad49183d15d9
+  # -- Clickhouse existing secret name that needs to be in the namespace where
+  # posthog is deployed into. Will not use the above password value if set
+  existingSecret: ""
+  # -- Key in the existingSecret containing the password value
+  existingSecretPasswordKey: ""
+  # -- Whether to use TLS connection connecting to ClickHouse
+  secure: false
+  # -- Whether to verify TLS certificate on connection to ClickHouse
+  verify: false
+  # -- List of external Zookeeper servers to use.
+  # externalZookeeper:
+  #   servers:
+  #     - host: host1
+  #       port: 2181
+  #     - host: host2
+  #       port: 2181
+  #     - host: host3
+  #       port: 2181
+
+  image:
+    # -- ClickHouse image repository.
+    repository: clickhouse/clickhouse-server
+    # -- ClickHouse image tag. Note: PostHog does not support all versions of ClickHouse. Please override the default only if you know what you are doing.
+    tag: "22.8.11.15"
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+
+  # -- Toleration labels for clickhouse pod assignment
+  tolerations: []
+  # -- Affinity settings for clickhouse pod
+  affinity: {}
+  # -- Clickhouse resource requests/limits. See more at http://kubernetes.io/docs/user-guide/compute-resources/
+  resources: {}
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 16Gi
+  #   requests:
+  #     cpu: 4000m
+  #     memory: 16Gi
+  securityContext:
+    enabled: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+
+  # -- Kubernetes Service type.
+  serviceType: ClusterIP
+
+  # -- An allowlist of IP addresses or network masks the ClickHouse user is
+  # allowed to access from. By default anything within a private network will be
+  # allowed. This should suffice for most use case although to expose to other
+  # networks you will need to update this setting.
+  #
+  # For more details on usage, see https://posthog.com/docs/self-host/deploy/configuration#securing-clickhouse
+  allowedNetworkIps:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.0.0/16"
+
+  persistence:
+    # -- Enable data persistence using PVC.
+    enabled: true
+
+    # -- Use a manually managed Persistent Volume and Claim.
+    #    If defined, PVC must be created manually before volume will be bound.
+    #
+    existingClaim: ""
+
+    # -- Persistent Volume Storage Class to use.
+    #    If defined, `storageClassName: <storageClass>`.
+    #    If set to `storageClassName: ""`, disables dynamic provisioning.
+    #    If undefined (the default) or set to `null`, no storageClassName spec is
+    #    set, choosing the default provisioner.
+    #
+    storageClass: null
+
+    # -- Persistent Volume size
+    size: 20Gi
+
+  ## -- Clickhouse user profile configuration.
+  ## You can use this to override profile settings, for example `default/max_memory_usage: 40000000000`
+  ## For the full list of settings, see:
+  ## - https://clickhouse.com/docs/en/operations/settings/settings-profiles/
+  ## - https://clickhouse.com/docs/en/operations/settings/settings/
+  profiles: {}
+
+  ## -- Default user profile configuration for Clickhouse. !!! Please DO NOT override this !!!
+  defaultProfiles:
+    default/allow_experimental_window_functions: "1"
+    default/allow_nondeterministic_mutations: "1"
+
+
+  ## -- Clickhouse cluster layout. (Experimental, use at own risk)
+  ## For a full list of options, see https://github.com/Altinity/clickhouse-operator/blob/master/docs/custom_resource_explained.md
+  ## section on clusters and layouts.
+  layout:
+    shardsCount: 1
+    replicasCount: 1
+
+  ## -- ClickHouse settings configuration.
+  ## You can use this to override settings, for example `prometheus/port: 9363`
+  ## For the full list of settings, see:
+  ## - https://clickhouse.com/docs/en/operations/settings/settings/
+  settings: {}
+    # Uncomment those lines if you want to enable the built-in Prometheus HTTP endpoint in ClickHouse.
+    # prometheus/endpoint: /metrics
+    # prometheus/port: 9363
+    # prometheus/metrics: true
+    # prometheus/events: true
+    # prometheus/asynchronous_metrics: true
+
+  ## -- Default settings configuration for ClickHouse. !!! Please DO NOT override this !!!
+  defaultSettings:
+    default_database: "posthog"
+    format_schema_path: /etc/clickhouse-server/config.d/
+
+  ## -- specify additional user configs for ClickHouse. This will be added to
+  ## the users.xml configuration. See
+  ## https://github.com/Altinity/clickhouse-operator for details.
+  additionalUsersConfig:
+
+  ## -- ClickHouse pod(s) annotation.
+  podAnnotations:
+    # Uncomment those lines if you want Prometheus server to scrape ClickHouse pods metrics.
+    # prometheus.io/scrape: "true"
+    # prometheus.io/path: /metrics
+    # prometheus.io/port: "9363"
+
+  ## -- Clickhouse pod distribution.
+  podDistribution:
+    # Uncomment to have replicas of each shard reside in different availability zones.
+    # - scope: Shard
+    #   type: ShardAntiAffinity
+    #   topologyKey: "topology.kubernetes.io/zone"
+
+  client:
+    image:
+      # -- ClickHouse image repository.
+      repository: clickhouse/clickhouse-server
+      # -- ClickHouse image tag. Note: PostHog does not support all versions of ClickHouse. Please override the default only if you know what you are doing.
+      tag: "22.8.11.15"
+      # -- Image pull policy
+      pullPolicy: IfNotPresent
+      ## Optionally specify an array of imagePullSecrets.
+      ## Secrets must be manually created in the namespace.
+      ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+      ## Example:
+      ## pullSecrets:
+      ##   - myRegistryKeySecretName
+      ##
+      pullSecrets: []
+
+  backup:
+    # https://posthog.com/docs/self-host/runbook/clickhouse/backup
+    # https://github.com/AlexAkulov/clickhouse-backup
+    enabled: false
+    image:
+      # -- Clickhouse backup image repository.
+      repository: altinity/clickhouse-backup
+      # -- ClickHouse backup image tag.
+      tag: "1.5.0"
+      # -- Image pull policy
+      pullPolicy: IfNotPresent
+      ## Optionally specify an array of imagePullSecrets.
+      ## Secrets must be manually created in the namespace.
+      ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+      ## Example:
+      ## pullSecrets:
+      ##   - myRegistryKeySecretName
+      ##
+      pullSecrets: []
+
+    backup_user: backup
+    # password in plain text because it's using in cronjob
+    backup_password: backup_password
+    # -- Use an existing secret name in the deployed namespace for the backup
+    # password
+    existingSecret: ""
+    # -- Key in the existingSecret containing the password value
+    existingSecretPasswordKey: ""
+    backup_schedule: "0 0 * * *" # backup every day at 0:00
+    clickhouse_services: "chi-posthog-posthog-0-0" # use first replica in each shard, use `kubectl get svc | grep chi-posthog-posthog`
+
+    # All options: https://github.com/AlexAkulov/clickhouse-backup#default-config
+    env:
+      - name: LOG_LEVEL
+        value: "debug"
+      - name: ALLOW_EMPTY_BACKUPS
+        value: "true"
+      - name: API_LISTEN
+        value: "0.0.0.0:7171"
+      # INSERT INTO system.backup_actions to execute backup
+      - name: API_CREATE_INTEGRATION_TABLES
+        value: "true"
+      - name: BACKUPS_TO_KEEP_REMOTE
+        value: "0"
+      # Add settings for remote backup storage.
+
+
+## External clickhouse configuration
+##
+externalClickhouse:
+  # -- Host of the external cluster. This is required when clickhouse.enabled is false
+  host:
+  # -- Name of the external cluster to run DDL queries on. This is required when clickhouse.enabled is false
+  cluster:
+  # -- Database name for the external cluster
+  database: posthog
+  # -- User name for the external cluster to connect to the external cluster as
+  user:
+  # -- Password for the cluster. Ignored if existingClickhouse.existingSecret is set
+  password:
+  # -- Name of an existing Kubernetes secret object containing the password
+  existingSecret:
+  # -- Name of the key pointing to the password in your Kubernetes secret
+  existingSecretPasswordKey:
+  # -- Whether to use TLS connection connecting to ClickHouse
+  secure: false
+  # -- Whether to verify TLS connection connecting to ClickHouse
+  verify: false
+
+
+cloudwatch:
+  # -- Enable cloudwatch container insights to get logs and metrics on AWS
+  enabled: false
+  # -- AWS region
+  region:
+  # -- AWS EKS cluster name
+  clusterName:
+  # -- fluentBit configuration
+  fluentBit:
+    server: "On"
+    port: 2020
+    readHead: "On"
+    readTail: "Off"
+
+
+# Provide affinity for hooks if needed
+hooks:
+  # -- Node labels for hooks.
+  nodeSelector: {}
+  # -- Toleration labels for hooks.
+  tolerations: []
+  # -- Affinity settings for hooks.
+  affinity: {}
+  migrate:
+    # -- Env variables for migate hooks
+    env: []
+    # -- Hook job resource limits/requests
+    resources: {}
+
+
+serviceAccount:
+  # -- Configures if a ServiceAccount with this name should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  # -- name of the ServiceAccount to be used by access-controlled resources.
+  # @default autogenerated
+  name:
+  # -- Configures annotation for the ServiceAccount
+  annotations: {}
+
+
+###
+###
+### ---- MINIO (Object Storage system) ----
+###
+###
+minio:
+  # -- Whether to install MinIO (object storage system) or not. You can keep it disabled or rely on `externalObjectStorage` if you want to use a managed object storage service (AWS S3, Google Cloud Storage, ...).
+  enabled: false
+  auth:
+    # -- MinIO root username
+    rootUser: root-user
+    # -- MinIO root password
+    rootPassword: root-password-change-me-please
+    # -- Use existing secret for credentials details (`auth.rootUser` and `auth.rootPassword` will be ignored and picked up from this secret). The secret has to contain the keys `root-user` and `root-password`)
+    existingSecret:
+  persistence:
+    # -- Enable MinIO data persistence using PVC.
+    enabled: true
+  # -- Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
+  defaultBuckets: "posthog"
+  # -- Disable MinIO Web UI
+  disableWebUI: true
+
+  # We are overriding the default service ports as they collide with ClickHouse
+  service:
+    ports:
+      # -- MinIO API service port
+      api: "19000"
+      # -- MinIO Console service port
+      console: "19001"
+
+  ## -- MinIO pod(s) annotation.
+  podAnnotations:
+    # Uncomment those lines if you want Prometheus server to scrape MinIO pods metrics.
+    # prometheus.io/scrape: "true"
+    # prometheus.io/path: "/minio/v2/metrics/cluster"
+    # prometheus.io/port: "9000"
+
+## External Object Storage configuration
+##
+externalObjectStorage:
+  # -- Endpoint of the external object storage. e.g. https://s3.us-east-1.amazonaws.com
+  endpoint:
+  # -- Host of the external object storage. Deprecated: use endpoint instead
+  host:
+  # -- Port of the external object storage. Deprecated: use endpoint instead
+  port:
+  # -- Bucket name to use.
+  bucket:
+  # -- Name of an existing Kubernetes secret object containing the `access_key_id` and `secret_access_key`. The secret has to contain the keys `root-user` and `root-password`).
+  existingSecret:
+
+###
+###
+### ---- Grafana ----
+###
+###
+grafana:
+  # -- Whether to install Grafana or not.
+  enabled: false
+
+  # -- Sidecar configuration to automagically pull the dashboards from the `charts/posthog/grafana-dashboard` folder. See [official docs](https://github.com/grafana/helm-charts/blob/main/charts/grafana/README.md) for more info.
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
+
+  # -- Configure Grafana datasources. See [docs](http://docs.grafana.org/administration/provisioning/#datasources) for more info.
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+
+      # Comment the snippet below if you are running with `prometheus.enabled: false`
+      - name: Prometheus
+        type: prometheus
+        url: http://posthog-prometheus-server
+        access: proxy
+        isDefault: true
+        jsonData:
+          timeInterval: 60s # pass this explicitly so it can be used by '$__rate_interval'
+                            # https://grafana.com/blog/2020/09/28/new-in-grafana-7.2-__rate_interval-for-prometheus-rate-queries-that-just-work/
+
+      # Comment the snippet below if you are running with `loki.enabled: false`
+      - name: Loki
+        type: loki
+        url: http://posthog-loki-read:3100
+        access: proxy
+        isDefault: false
+
+      # Comment the snippet below if you are running with `prometheus.alertmanager.enabled: false`
+      - name: Alertmanager
+        type: alertmanager
+        url: http://posthog-prometheus-alertmanager
+        access: proxy
+        isDefault: false
+        jsonData:
+          implementation: prometheus
+
+###
+###
+### ---- Loki ----
+###
+###
+loki:
+  # -- Whether to install Loki or not. With the default configuration you will
+  # get no replication, so as to easily support small deploys that e.g. do not
+  # have multiple nodes in the cluster. For production setups that are
+  # distributed across e.g. multiple AWS AZs it's recommended that you increase
+  # the replica counts for `read:` and `write:`. These stateful sets by default
+  # have an anti-affinity so you'll need at least as many nodes as replicas in a
+  # set.
+  enabled: false
+
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+
+    ## -- Pod annotations.
+    podAnnotations: {}
+      # Uncomment those lines if you want Prometheus server to scrape metrics.
+      # prometheus.io/scrape: "true"
+      # prometheus.io/path: /metrics
+      # prometheus.io/port: "3100"
+
+  read:
+    replicas: 1
+
+  write:
+    replicas: 1
+
+  gateway:
+    enabled: false
+
+  minio:
+    # -- Whether to enable minio as backing storage for Loki. To use S3 or GCS
+    # instead, set this to false and specify the appropriate `loki.storage`
+    # configuration.
+    #
+    # Note if you do use minio in production, the default setup is minimal and
+    # will only run with 1 replica. In production setups it's recommended change
+    # minio settings to your needs.
+    enabled: true
+    replicas: 1
+    drivesPerNode: 2
+
+  # We add this override as otherwise the resource naming doesn't include
+  # "posthog-" prepended. The upgrade from Loki Chart 2.x to 3.x resulted in the
+  # naming of e.g. services to change. By adding we maintain backwards compat.
+  # for anything that may be referencing e.g. services.
+  fullnameOverride: posthog-loki
+  nameOverride: posthog-loki
+
+  # Whether to enabled monitoring of Loki. We avoid enabling this by default as
+  # it requires installing additional CRDs (e.g. the grafana-operator)
+  monitoring:
+    alerts:
+      enabled: false
+    dashboards:
+      enabled: false
+    rules:
+      enabled: false
+    selfMonitoring:
+      enabled: false
+      grafanaAgent:
+        installOperator: false
+      lokiCanary:
+        enabled: false
+    serviceMonitor:
+      enabled: false
+
+  test:
+    enabled: false
+
+###
+###
+### ---- EventRouter: https://github.com/vmware-archive/eventrouter
+###
+###
+eventrouter:
+  # -- Whether to install eventrouter.
+  enabled: false
+  image:
+    repository: gcr.io/heptio-images/eventrouter
+    tag: v0.3
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+
+  # -- Resource limits for eventrouter.
+  resources: {}
+
+###
+###
+### ---- Promtail ----
+###
+###
+promtail:
+  # -- Whether to install Promtail or not.
+  enabled: false
+
+  config:
+    clients:
+      - url: http://posthog-loki-write:3100/loki/api/v1/push
+
+    snippets:
+      pipelineStages:
+        - cri: {}
+        - match:
+            selector: '{app="ingress-nginx"}'
+            stages:
+              - json:
+                  expressions:
+                    timestamp: time
+                    host: host
+                    method: method
+                    uri: uri
+                    status: status
+                    user_agent: http_user_agent
+                    correlation_id: correlation_id
+                    forwarded_for: http_x_forwarded_for
+              - labels:
+                  method:
+                  status:
+              - timestamp:
+                  source: timestamp
+                  format: RFC3339
+        - match:
+            selector: '{app="posthog", container=~"posthog-web|posthog-worker|posthog-events"}'
+            stages:
+              - json:
+                  expressions:
+                    timestamp:
+                    level:
+              - labels:
+                  level:
+              - timestamp:
+                  source: timestamp
+                  format: RFC3339Nano
+
+  ## -- Pod annotations.
+  podAnnotations: {}
+    # Uncomment those lines if you want Prometheus server to scrape metrics.
+    # prometheus.io/scrape: "true"
+    # prometheus.io/path: /metrics
+    # prometheus.io/port: "3101"
+
+###
+###
+### ---- Prometheus ----
+###
+###
+prometheus:
+  # -- Whether to install Prometheus or not.
+  enabled: false
+
+  alertmanager:
+    # -- Whether to install Prometheus AlertManager or not.
+    enabled: false
+    podAnnotations: {}
+      # Uncomment those lines if you want Prometheus server to scrape metrics.
+      # prometheus.io/scrape: "true"
+      # prometheus.io/path: /metrics
+      # prometheus.io/port: "9093"
+
+  pushgateway:
+    # -- Whether to install Prometheus Pushgateway or not.
+    enabled: false
+
+  serverFiles:
+    # -- Alerts configuration. For more information see: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+    #
+    # -- NOTE: alerting is an important part of any production system. With this Helm chart we aim to provide a good
+    # -- collection of default rules that can be used to successfully alert an operator if a PostHog installation is not
+    # -- working as expected. As those rules will likely evolve over time and as we don't want to cut a new major release
+    # -- every time it happens, please consider the `prometheus.serverFiles.alerting_rules.yml` defaults as UNSTABLE.
+    # -- Please consider to explicitly override this input in your `values.yaml` if you need to keep it stable.
+    #
+    alerting_rules.yml:
+      #
+      # The majority of alerts are inspired by the great collection of rules available at:
+      # https://github.com/samber/awesome-prometheus-alerts
+      #
+      groups:
+        - name: PostHog
+          rules:
+            - alert: ExportsConsumerDelayed
+              expr: (time() * 1000 - (max(latest_processed_timestamp_ms{groupId="async_handlers",topic="clickhouse_events_json"}))) > 300000
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Exports and WebHooks have delayed by more than 5 minutes for more than 5 minutes.
+                description: "Latest timestamp registered as processed on topic 'clickhouse_events_json', consumer group 'async_handlers' more then 5 minutes old"
+
+            - alert: ScheduledTasksConsumerDelayed
+              expr: (time() * 1000 - (max(latest_processed_timestamp_ms{groupId="scheduled-tasks-runner",topic="scheduled_tasks"}))) > 300000
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: RunEveryX tasks have been delayed by more than 5 minutes for more than 5 minutes.
+                description: "Latest timestamp registered as processed on topic 'scheduled_tasks', consumer group 'scheduled-tasks-runner' more then 5 minutes old"
+
+            - alert: JobsConsumerDelayed
+              expr: (time() * 1000 - (max(latest_processed_timestamp_ms{groupId="jobs-inserter",topic="jobs"}))) > 300000
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Jobs scheduled via Apps jobs have been delayed by more than 5 minutes for more than 5 minutes.
+                description: "Latest timestamp registered as processed on topic 'jobs', consumer group 'jobs-inserter' more then 5 minutes old"
+
+            - alert: IngestionConsumerDelayed
+              expr: (time() * 1000 - (max(latest_processed_timestamp_ms{groupId="ingestion",topic="events_plugin_ingestion"}))) > 300000
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Ingestion for analytics events has been delayed by more than 5 minutes for more than 5 minutes.
+                description: "Latest timestamp registered as processed on topic 'events_plugin_ingestion', consumer group 'ingestion' more then 5 minutes old"
+
+            - alert: RecordingsConsumerDelayed
+              # TODO: fix these consumer delay alerts. The issue with the
+              # current alerts is that they are not the _oldest_ message not
+              # processed but the _newest_ of the oldest _per partition_. This
+              # applies to all the alerts for consumer lag above. Adjusting the
+              # query to the below could work, but also simply using absolute
+              # lag may be the least work
+              #
+              # ```
+              # (time() * 1000 - (
+              #   min(
+              #     max(
+              #       latest_processed_timestamp_ms{groupId="session-recordings",topic="session_recording_events"}
+              #     ) by (topic)
+              #   )
+              # ))
+              # ```
+              #
+              # The issue with the above is when there is no volume on a
+              # partition, then we end up not reporting a timestamp for this
+              # partition and the alert will sound incorrectly.
+              expr: (time() * 1000 - (max(latest_processed_timestamp_ms{groupId="session-recordings",topic="session_recording_events"}))) > 300000
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Ingestion for session recording and web performance events has been delayed by more than 5 minutes for more than 5 minutes.
+                description: "Latest timestamp registered as processed on topic 'session_recording_events', consumer group 'session-recordings' more then 5 minutes old"
+
+            - alert: RecordingsConsumerDLQ
+              expr: sum(delta(kafka_topic_partition_current_offset{topic="session_recording_events_dlq"}[5m])) > 0
+              for: 1m
+              labels:
+                severity: critical
+              annotations:
+                summary: Failed to process some session recording events and have been sent to the dead letter queue for review.
+                description: "The `session_recording_events_dlq` topic offset has increased over the past 5 minutes."
+
+        - name: Kubernetes # via kube-state-metrics
+          rules:
+            - alert: KubernetesNodeReady
+              expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+              for: 10m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes Node ready (instance {{ $labels.instance }})
+                description: "Node {{ $labels.node }} has been unready for a long time"
+
+            - alert: KubernetesMemoryPressure
+              expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes memory pressure (instance {{ $labels.instance }})
+                description: "{{ $labels.node }} has MemoryPressure condition"
+
+            - alert: KubernetesDiskPressure
+              expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+              for: 10m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes disk pressure (instance {{ $labels.instance }})
+                description: "{{ $labels.node }} has DiskPressure condition"
+
+            - alert: KubernetesOutOfDisk
+              expr: kube_node_status_condition{condition="OutOfDisk",status="true"} == 1
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes out of disk (instance {{ $labels.instance }})
+                description: "{{ $labels.node }} has OutOfDisk condition"
+
+            - alert: KubernetesOutOfCapacity
+              expr: sum by (node) ((kube_pod_status_phase{phase="Running"} == 1) + on(uid) group_left(node) (0 * kube_pod_info{pod_template_hash=""})) / sum by (node) (kube_node_status_allocatable{resource="pods"}) * 100 > 90
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes out of capacity (instance {{ $labels.instance }})
+                description: "{{ $labels.node }} is out of capacity"
+
+            - alert: KubernetesContainerOomKiller
+              expr: (kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1) and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes container oom killer (instance {{ $labels.instance }})
+                description: "Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has been OOMKilled {{ $value }} times in the last 10 minutes."
+
+            - alert: KubernetesJobFailed
+              expr: kube_job_status_failed > 0
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes Job failed (instance {{ $labels.instance }})
+                description: "Job {{$labels.namespace}}/{{$labels.exported_job}} failed to complete"
+
+            - alert: KubernetesCronjobSuspended
+              expr: kube_cronjob_spec_suspend != 0
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes CronJob suspended (instance {{ $labels.instance }})
+                description: "CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is suspended"
+
+            - alert: KubernetesPersistentvolumeclaimPending
+              expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+              for: 2m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})
+                description: "PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending"
+
+            - alert: KubernetesVolumeOutOfDiskSpace
+              expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes Volume out of disk space (instance {{ $labels.instance }})
+                description: "Volume is almost full (< 10% left)"
+
+            - alert: KubernetesVolumeFullInFourDays
+              expr: predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes Volume full in four days (instance {{ $labels.instance }})
+                description: "{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is expected to fill up within four days. Currently {{ $value | humanize }}% is available."
+
+            - alert: KubernetesPersistentvolumeError
+              expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending", job="kube-state-metrics"} > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes PersistentVolume error (instance {{ $labels.instance }})
+                description: "Persistent volume is in bad state"
+
+            - alert: KubernetesStatefulsetDown
+              expr: (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
+              for: 1m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes StatefulSet down (instance {{ $labels.instance }})
+                description: "A StatefulSet went down"
+
+            - alert: KubernetesHpaScalingAbility
+              expr: kube_horizontalpodautoscaler_status_condition{status="false", condition="AbleToScale"} == 1
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes HPA scaling ability (instance {{ $labels.instance }})
+                description: "Pod is unable to scale"
+
+            - alert: KubernetesHpaMetricAvailability
+              expr: kube_horizontalpodautoscaler_status_condition{status="false", condition="ScalingActive"} == 1
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes HPA metric availability (instance {{ $labels.instance }})
+                description: "HPA is not able to collect metrics"
+
+            - alert: KubernetesHpaScaleCapability
+              expr: kube_horizontalpodautoscaler_status_desired_replicas >= kube_horizontalpodautoscaler_spec_max_replicas
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes HPA scale capability (instance {{ $labels.instance }})
+                description: "The maximum number of desired Pods has been hit"
+
+            - alert: KubernetesPodNotHealthy
+              expr: sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"}) > 0
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes Pod not healthy (instance {{ $labels.instance }})
+                description: "Pod has been in a non-ready state for longer than 15 minutes."
+
+            - alert: KubernetesPodCrashLooping
+              expr: increase(kube_pod_container_status_restarts_total[1m]) > 3
+              for: 2m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes pod crash looping (instance {{ $labels.instance }})
+                description: "Pod {{ $labels.pod }} is crash looping"
+
+            - alert: KubernetesReplicassetMismatch
+              expr: kube_replicaset_spec_replicas != kube_replicaset_status_ready_replicas
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes ReplicasSet mismatch (instance {{ $labels.instance }})
+                description: >
+                  The number of ready pods in the Deployment's replicaset does
+                  not match the desired number.
+
+            - alert: KubernetesDeploymentReplicasMismatch
+              expr: kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes Deployment replicas mismatch (instance {{ $labels.instance }})
+                description: >
+                  The number of ready pods in the Deployment does not match the
+                  desired number.
+
+            - alert: KubernetesStatefulsetReplicasMismatch
+              expr: kube_statefulset_status_replicas_ready != kube_statefulset_status_replicas
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes StatefulSet replicas mismatch (instance {{ $labels.instance }})
+                description: >
+                  The number of ready pods in the StatefulSet does not match the
+                  desired number.
+
+            - alert: KubernetesDeploymentGenerationMismatch
+              expr: kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+              for: 10m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes Deployment generation mismatch (instance {{ $labels.instance }})
+                description: "A Deployment has failed but has not been rolled back."
+
+            - alert: KubernetesStatefulsetGenerationMismatch
+              expr: kube_statefulset_status_observed_generation != kube_statefulset_metadata_generation
+              for: 10m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes StatefulSet generation mismatch (instance {{ $labels.instance }})
+                description: "A StatefulSet has failed but has not been rolled back."
+
+            - alert: KubernetesStatefulsetUpdateNotRolledOut
+              expr: max without (revision) (kube_statefulset_status_current_revision unless kube_statefulset_status_update_revision) * (kube_statefulset_replicas != kube_statefulset_status_replicas_updated)
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes StatefulSet update not rolled out (instance {{ $labels.instance }})
+                description: "StatefulSet update has not been rolled out."
+
+            - alert: KubernetesDaemonsetRolloutStuck
+              expr: kube_daemonset_status_number_ready / kube_daemonset_status_desired_number_scheduled * 100 < 100 or kube_daemonset_status_desired_number_scheduled - kube_daemonset_status_current_number_scheduled > 0
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes DaemonSet rollout stuck (instance {{ $labels.instance }})
+                description: "Some Pods of DaemonSet are not scheduled or not ready"
+
+            - alert: KubernetesDaemonsetMisscheduled
+              expr: kube_daemonset_status_number_misscheduled > 0
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes DaemonSet misscheduled (instance {{ $labels.instance }})
+                description: "Some DaemonSet Pods are running where they are not supposed to run"
+
+            - alert: KubernetesCronjobTooLong
+              expr: time() - kube_cronjob_next_schedule_time > 3600
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes CronJob too long (instance {{ $labels.instance }})
+                description: "CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more than 1h to complete."
+
+            - alert: KubernetesJobSlowCompletion
+              expr: kube_job_spec_completions - kube_job_status_succeeded > 0
+              for: 12h
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes job slow completion (instance {{ $labels.instance }})
+                description: "Kubernetes Job {{ $labels.namespace }}/{{ $labels.job_name }} did not complete in time."
+
+            - alert: KubernetesApiServerErrors
+              expr: sum(rate(apiserver_request_total{job="apiserver",code=~"^(?:5..)$"}[1m])) / sum(rate(apiserver_request_total{job="apiserver"}[1m])) * 100 > 3
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes API server errors (instance {{ $labels.instance }})
+                description: "Kubernetes API server is experiencing high error rate"
+
+            - alert: KubernetesApiClientErrors
+              expr: (sum(rate(rest_client_requests_total{code=~"(4|5).."}[1m])) by (instance, job) / sum(rate(rest_client_requests_total[1m])) by (instance, job)) * 100 > 1
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes API client errors (instance {{ $labels.instance }})
+                description: "Kubernetes API client is experiencing high error rate"
+
+            - alert: KubernetesClientCertificateExpiresNextWeek
+              expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 7*24*60*60
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes client certificate expires next week (instance {{ $labels.instance }})
+                description: "A client certificate used to authenticate to the apiserver is expiring next week."
+
+            - alert: KubernetesClientCertificateExpiresSoon
+              expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 24*60*60
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Kubernetes client certificate expires soon (instance {{ $labels.instance }})
+                description: "A client certificate used to authenticate to the apiserver is expiring in less than 24.0 hours."
+
+            - alert: KubernetesApiServerLatency
+              expr: histogram_quantile(0.99, sum(rate(apiserver_request_latencies_bucket{subresource!="log",verb!~"^(?:CONNECT|WATCHLIST|WATCH|PROXY)$"} [10m])) WITHOUT (instance, resource)) / 1e+06 > 1
+              for: 2m
+              labels:
+                severity: warning
+              annotations:
+                summary: Kubernetes API server latency (instance {{ $labels.instance }})
+                description: "Kubernetes API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}."
+
+
+        - name: Loki # via embedded exporter
+          rules:
+            - alert: LokiProcessTooManyRestarts
+              expr: changes(process_start_time_seconds{app="loki"}[15m]) > 2
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Loki process too many restarts (instance {{ $labels.instance }})
+                description: "A loki process had too many restarts (target {{ $labels.instance }})"
+
+            - alert: LokiRequestErrors
+              expr: 100 * sum(rate(loki_request_duration_seconds_count{status_code=~"5.."}[1m])) by (namespace, job, route) / sum(rate(loki_request_duration_seconds_count[1m])) by (namespace, job, route) > 10
+              for: 15m
+              labels:
+                severity: warning
+              annotations:
+                summary: Loki request errors (instance {{ $labels.instance }})
+                description: "The {{ $labels.job }} and {{ $labels.route }} are experiencing errors"
+
+            - alert: LokiRequestPanic
+              expr: sum(increase(loki_panic_total[10m])) by (namespace, job) > 0
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: Loki request panic (instance {{ $labels.instance }})
+                description: "The {{ $labels.job }} is experiencing {{ printf \"%.2f\" $value }}% increase of panics"
+
+            - alert: LokiRequestLatency
+              expr: (histogram_quantile(0.99, sum(rate(loki_request_duration_seconds_bucket{route!~"(?i).*tail.*"}[5m])) by (le))) > 3
+              for: 10m
+              labels:
+                severity: warning
+              annotations:
+                summary: Loki request latency (instance {{ $labels.instance }})
+                description: "The {{ $labels.job }} {{ $labels.route }} is experiencing {{ printf \"%.2f\" $value }}s 99th percentile latency"
+
+
+        - name: Promtail # via embedded exporter
+          rules:
+            - alert: PromtailRequestErrors
+              expr: 100 * sum(rate(promtail_request_duration_seconds_count{status_code=~"5..|failed"}[1m])) by (namespace, job, route, instance) / sum(rate(promtail_request_duration_seconds_count[1m])) by (namespace, job, route, instance) > 10
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Promtail request errors (instance {{ $labels.instance }})
+                description: "The {{ $labels.job }} {{ $labels.route }} is experiencing {{ printf \"%.2f\" $value }}% errors."
+
+            - alert: PromtailRequestLatency
+              expr: histogram_quantile(0.99, sum(rate(promtail_request_duration_seconds_bucket[5m])) by (le)) > 1
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Promtail request latency (instance {{ $labels.instance }})
+                description: "The {{ $labels.job }} {{ $labels.route }} is experiencing {{ printf \"%.2f\" $value }}s 99th percentile latency."
+
+
+        - name: Prometheus # via embedded exporter
+          rules:
+            - alert: PrometheusJobMissing
+              expr: absent(up{job="prometheus"})
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Prometheus job missing (instance {{ $labels.instance }})
+                description: "A Prometheus job has disappeared"
+
+            - alert: PrometheusTargetMissing
+              expr: up == 0
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus target missing (instance {{ $labels.instance }})
+                description: "A Prometheus target has disappeared. An exporter might be crashed."
+
+            - alert: PrometheusAllTargetsMissing
+              expr: sum by (job) (up) == 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus all targets missing (instance {{ $labels.instance }})
+                description: "A Prometheus job does not have living target anymore."
+
+            - alert: PrometheusConfigurationReloadFailure
+              expr: prometheus_config_last_reload_successful != 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus configuration reload failure (instance {{ $labels.instance }})
+                description: "Prometheus configuration reload error"
+
+            - alert: PrometheusTooManyRestarts
+              expr: changes(process_start_time_seconds{job=~"prometheus|pushgateway|alertmanager"}[15m]) > 2
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus too many restarts (instance {{ $labels.instance }})
+                description: "Prometheus has restarted more than twice in the last 15 minutes. It might be crashlooping."
+
+            - alert: PrometheusAlertmanagerJobMissing
+              expr: absent(up{job="kubernetes-pods", app="prometheus", component="alertmanager"})
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus AlertManager job missing (instance {{ $labels.instance }})
+                description: "A Prometheus AlertManager job has disappeared"
+
+            - alert: PrometheusAlertmanagerConfigurationReloadFailure
+              expr: alertmanager_config_last_reload_successful != 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus AlertManager configuration reload failure (instance {{ $labels.instance }})
+                description: "AlertManager configuration reload error"
+
+            - alert: PrometheusAlertmanagerConfigNotSynced
+              expr: count(count_values("config_hash", alertmanager_config_hash)) > 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus AlertManager config not synced (instance {{ $labels.instance }})
+                description: "Configurations of AlertManager cluster instances are out of sync"
+
+            - alert: PrometheusAlertmanagerE2eDeadManSwitch
+              expr: vector(1)
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus AlertManager E2E dead man switch (instance {{ $labels.instance }})
+                description: "Prometheus DeadManSwitch is an always-firing alert. It's used as an end-to-end test of Prometheus through the Alertmanager."
+
+            - alert: PrometheusNotConnectedToAlertmanager
+              expr: prometheus_notifications_alertmanagers_discovered < 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus not connected to alertmanager (instance {{ $labels.instance }})
+                description: "Prometheus cannot connect the alertmanager"
+
+            - alert: PrometheusRuleEvaluationFailures
+              expr: increase(prometheus_rule_evaluation_failures_total[3m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus rule evaluation failures (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} rule evaluation failures, leading to potentially ignored alerts."
+
+            - alert: PrometheusTemplateTextExpansionFailures
+              expr: increase(prometheus_template_text_expansion_failures_total[3m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus template text expansion failures (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} template text expansion failures"
+
+            - alert: PrometheusRuleEvaluationSlow
+              expr: prometheus_rule_group_last_duration_seconds > prometheus_rule_group_interval_seconds
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: Prometheus rule evaluation slow (instance {{ $labels.instance }})
+                description: "Prometheus rule evaluation took more time than the scheduled interval. It indicates a slower storage backend access or too complex query."
+
+            - alert: PrometheusNotificationsBacklog
+              expr: min_over_time(prometheus_notifications_queue_length[10m]) > 0
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Prometheus notifications backlog (instance {{ $labels.instance }})
+                description: "The Prometheus notification queue has not been empty for 10 minutes"
+
+            - alert: PrometheusAlertmanagerNotificationFailing
+              expr: rate(alertmanager_notifications_failed_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus AlertManager notification failing (instance {{ $labels.instance }})
+                description: "Alertmanager is failing sending notifications"
+
+            - alert: PrometheusTargetEmpty
+              expr: prometheus_sd_discovered_targets == 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus target empty (instance {{ $labels.instance }})
+                description: "Prometheus has no target in service discovery"
+
+            - alert: PrometheusTargetScrapingSlow
+              expr: prometheus_target_interval_length_seconds{quantile="0.9"} / on (interval, instance, job) prometheus_target_interval_length_seconds{quantile="0.5"} > 1.05
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: Prometheus target scraping slow (instance {{ $labels.instance }})
+                description: "Prometheus is scraping exporters slowly since it exceeded the requested interval time. Your Prometheus server is under-provisioned."
+
+            - alert: PrometheusLargeScrape
+              expr: increase(prometheus_target_scrapes_exceeded_sample_limit_total[10m]) > 10
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: Prometheus large scrape (instance {{ $labels.instance }})
+                description: "Prometheus has many scrapes that exceed the sample limit"
+
+            - alert: PrometheusTargetScrapeDuplicate
+              expr: increase(prometheus_target_scrapes_sample_duplicate_timestamp_total[5m]) > 0
+              for: 0m
+              labels:
+                severity: warning
+              annotations:
+                summary: Prometheus target scrape duplicate (instance {{ $labels.instance }})
+                description: "Prometheus has many samples rejected due to duplicate timestamps but different values"
+
+            - alert: PrometheusTsdbCheckpointCreationFailures
+              expr: increase(prometheus_tsdb_checkpoint_creations_failed_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus TSDB checkpoint creation failures (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} checkpoint creation failures"
+
+            - alert: PrometheusTsdbCheckpointDeletionFailures
+              expr: increase(prometheus_tsdb_checkpoint_deletions_failed_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus TSDB checkpoint deletion failures (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} checkpoint deletion failures"
+
+            - alert: PrometheusTsdbCompactionsFailed
+              expr: increase(prometheus_tsdb_compactions_failed_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus TSDB compactions failed (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} TSDB compactions failures"
+
+            - alert: PrometheusTsdbHeadTruncationsFailed
+              expr: increase(prometheus_tsdb_head_truncations_failed_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus TSDB head truncations failed (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} TSDB head truncation failures"
+
+            - alert: PrometheusTsdbReloadFailures
+              expr: increase(prometheus_tsdb_reloads_failures_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus TSDB reload failures (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} TSDB reload failures"
+
+            - alert: PrometheusTsdbWalCorruptions
+              expr: increase(prometheus_tsdb_wal_corruptions_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus TSDB WAL corruptions (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} TSDB WAL corruptions"
+
+            - alert: PrometheusTsdbWalTruncationsFailed
+              expr: increase(prometheus_tsdb_wal_truncations_failed_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Prometheus TSDB WAL truncations failed (instance {{ $labels.instance }})
+                description: "Prometheus encountered {{ $value }} TSDB WAL truncation failures"
+
+        - name: Redis # via prometheus-redis-exporter
+          rules:
+            - alert: RedisDown
+              expr: redis_up == 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis down (instance {{ $labels.instance }})
+                description: "Redis instance is down"
+
+            - alert: RedisMissingMaster
+              expr: (count(redis_instance_info{role="master"}) or vector(0)) < 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis missing master (instance {{ $labels.instance }})
+                description: "Redis cluster has no node marked as master."
+
+            - alert: RedisTooManyMasters
+              expr: count(redis_instance_info{role="master"}) > 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis too many masters (instance {{ $labels.instance }})
+                description: "Redis cluster has too many nodes marked as master."
+
+            - alert: RedisDisconnectedSlaves
+              expr: count without (instance, job) (redis_connected_slaves) - sum without (instance, job) (redis_connected_slaves) - 1 > 1
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis disconnected slaves (instance {{ $labels.instance }})
+                description: "Redis not replicating for all slaves. Consider reviewing the redis replication status."
+
+            - alert: RedisReplicationBroken
+              expr: delta(redis_connected_slaves[1m]) < 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis replication broken (instance {{ $labels.instance }})
+                description: "Redis instance lost a slave"
+
+            - alert: RedisClusterFlapping
+              expr: changes(redis_connected_slaves[1m]) > 1
+              for: 2m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis cluster flapping (instance {{ $labels.instance }})
+                description: "Changes have been detected in Redis replica connection. This can occur when replica nodes lose connection to the master and reconnect (a.k.a flapping)."
+
+            - alert: RedisMissingBackup
+              expr: time() - redis_rdb_last_save_timestamp_seconds > 60 * 60 * 24
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis missing backup (instance {{ $labels.instance }})
+                description: "Redis has not been backuped for 24 hours"
+
+            # The exporter must be started with --include-system-metrics flag or REDIS_EXPORTER_INCL_SYSTEM_METRICS=true environment variable.
+            - alert: RedisOutOfSystemMemory
+              expr: redis_memory_used_bytes / redis_total_system_memory_bytes * 100 > 90
+              for: 2m
+              labels:
+                severity: warning
+              annotations:
+                summary: Redis out of system memory (instance {{ $labels.instance }})
+                description: "Redis is running out of system memory (> 90%)"
+
+            - alert: RedisOutOfConfiguredMaxmemory
+              expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+              for: 2m
+              labels:
+                severity: warning
+              annotations:
+                summary: Redis out of configured maxmemory (instance {{ $labels.instance }})
+                description: "Redis is running out of configured maxmemory (> 90%)"
+
+            - alert: RedisTooManyConnections
+              expr: redis_connected_clients > 100
+              for: 2m
+              labels:
+                severity: warning
+              annotations:
+                summary: Redis too many connections (instance {{ $labels.instance }})
+                description: "Redis instance has too many connections"
+
+            - alert: RedisNotEnoughConnections
+              expr: redis_connected_clients < 5
+              for: 2m
+              labels:
+                severity: warning
+              annotations:
+                summary: Redis not enough connections (instance {{ $labels.instance }})
+                description: "Redis instance should have more connections (> 5)"
+
+            - alert: RedisRejectedConnections
+              expr: increase(redis_rejected_connections_total[1m]) > 0
+              for: 0m
+              labels:
+                severity: critical
+              annotations:
+                summary: Redis rejected connections (instance {{ $labels.instance }})
+                description: "Some connections to Redis has been rejected"
+
+
+###
+###
+### ---- prometheus-statsd-exporter ----
+###
+###
+prometheus-statsd-exporter:
+  # -- Whether to install the `prometheus-statsd-exporter` or not.
+  enabled: false
+  # -- Map of annotations to add to the pods.
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9102"
+
+externalStatsd:
+  # -- External Statsd host to use.
+  host:
+  # -- External Statsd port to use.
+  port:
+
+
+###
+###
+### ---- prometheus-kafka-exporter ----
+###
+###
+prometheus-kafka-exporter:
+  # -- Whether to install the `prometheus-kafka-exporter` or not.
+  enabled: false
+
+  # -- Map of annotations to add to the pods.
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9308"
+
+  # -- Specify the target Kafka brokers to monitor.
+  kafkaServer:
+    - posthog-posthog-kafka:9092
+
+
+###
+###
+### ---- prometheus-postgres-exporter ----
+###
+###
+prometheus-postgres-exporter:
+  # -- Whether to install the `prometheus-postgres-exporter` or not.
+  enabled: false
+
+  # -- Map of annotations to add to the pods.
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9187"
+
+  # -- Configuration options.
+  config:
+    datasource:
+      host: posthog-posthog-postgresql
+      user: postgres
+      passwordSecret:
+        name: posthog-posthog-postgresql
+        key: postgresql-password
+
+
+###
+###
+### ---- prometheus-redis-exporter ----
+###
+###
+prometheus-redis-exporter:
+  # -- Whether to install the `prometheus-redis-exporter` or not.
+  enabled: false
+
+  # -- Map of annotations to add to the pods.
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: "9121"
+
+  # -- Specify the target Redis instance to monitor.
+  redisAddress: redis://posthog-posthog-redis-master:6379
+
+
+###
+###
+### ---- MISC ----
+###
+###
+installCustomStorageClass: false
+
+busybox:
+  # -- Specify the image to use for e.g. init containers
+  image: busybox:1.34
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## Example:
+  ## pullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  pullSecrets: []
+
+
+# -- Kubernetes cluster domain name
+clusterDomain: cluster.local

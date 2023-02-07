@@ -1,0 +1,25 @@
+{{- if and .Values.pgbouncer.enabled .Values.pgbouncer.hpa.enabled -}}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ template "posthog.fullname" . }}-pgbouncer
+  labels: {{- include "_snippet-metadata-labels-common" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    apiVersion: apps/v1
+    name: {{ template "posthog.fullname" . }}-pgbouncer
+  minReplicas: {{ .Values.pgbouncer.hpa.minpods }}
+  maxReplicas: {{ .Values.pgbouncer.hpa.maxpods }}
+  metrics:
+  {{- with .Values.pgbouncer.hpa.cputhreshold }}
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ . }}
+  {{- end }}
+  behavior:
+    {{ toYaml .Values.pgbouncer.hpa.behavior | nindent 4 }}
+{{- end }}

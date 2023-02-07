@@ -1,0 +1,149 @@
+suite: PostHog plugins exports deployment definition
+templates:
+  - templates/plugins-exports-deployment.yaml
+  - templates/secrets.yaml
+
+tests:
+  - it: should be empty if pluginsExports.enabled is set to false
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should have the correct apiVersion
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isAPIVersion:
+          of: apps/v1
+
+  - it: should be the correct kind
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Deployment
+
+  - it: should have a pod securityContext
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+      pluginsExports.podSecurityContext.enabled: true
+      pluginsExports.podSecurityContext.runAsUser: 1001
+      pluginsExports.podSecurityContext.fsGroup: 2000
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1001
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 2000
+
+  - it: should have a container securityContext
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+      pluginsExports.securityContext.enabled: true
+      pluginsExports.securityContext.runAsUser: 1001
+      pluginsExports.securityContext.allowPrivilegeEscalation: false
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 1001
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+
+  - it: should not have a pod securityContext
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+      pluginsExports.podSecurityContext.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isEmpty:
+          path: spec.template.spec.securityContext
+          value: 1001
+
+  - it: should not have a container securityContext
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+      pluginsExports.securityContext.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isEmpty:
+          path: spec.template.spec.containers[0].securityContext
+
+  - it: sets PLUGIN_SERVER_MODE
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PLUGIN_SERVER_MODE
+            value: exports
+
+  - it: sets SENTRY_DSN env var
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+      sentryDSN: main.endpoint
+      pluginsExports.sentryDSN: pluginsExports.endpoint
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SENTRY_DSN
+            value: pluginsExports.endpoint
+
+  - it: sets SENTRY_DSN env var with default
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      pluginsExports.enabled: true
+      sentryDSN: main.endpoint
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SENTRY_DSN
+            value: main.endpoint
+
+  - it: allows setting imagePullSecrets
+    template: templates/plugins-exports-deployment.yaml # TODO: remove once secrets.yaml will be fixed/removed
+    set:
+      cloud: local
+      pluginsExports.enabled: true
+      image.pullSecrets: [secret]
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value: [name: secret]

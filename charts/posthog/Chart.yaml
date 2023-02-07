@@ -1,0 +1,111 @@
+apiVersion: v2
+name: posthog
+description: 🦔 PostHog is developer-friendly, open-source product analytics.
+icon: https://camo.githubusercontent.com/11f72f57f33d7d34807bafc1314844f7a91bcdea/68747470733a2f2f706f7374686f672d7374617469632d66696c65732e73332e75732d656173742d322e616d617a6f6e6177732e636f6d2f576562736974652d4173736574732f6769746875622d636f7665722e706e67
+kubeVersion: ">= 1.23-0 <= 1.25-0"
+home: https://posthog.com
+sources:
+  - https://github.com/PostHog/charts-clickhouse
+
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+version: 30.3.4
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application.
+appVersion: 1.43.0
+
+dependencies:
+  - name: cert-manager
+    version: 1.6.1
+    repository: https://charts.jetstack.io
+    condition: cert-manager.enabled
+
+  - name: ingress-nginx
+    version: 4.0.13
+    repository: https://kubernetes.github.io/ingress-nginx
+    condition: ingress.nginx.enabled
+
+  - name: kafka
+    version: 14.9.3
+    repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+    condition: kafka.enabled
+
+  - name: minio
+    version: 11.3.5
+    repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+    condition: minio.enabled
+
+  - name: postgresql
+    version: 8.6.1
+    repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+    condition: postgresql.enabled
+
+  - name: redis
+    version: 16.8.9
+    repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+    condition: redis.enabled
+
+  - name: zookeeper
+    version: 7.0.5
+    repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+    condition: zookeeper.enabled
+
+  # Monitoring & observability
+  - name: grafana
+    version: 6.40.0
+    repository: https://grafana.github.io/helm-charts
+    condition: grafana.enabled
+
+  - name: loki
+    version: 3.3.4
+    repository: https://grafana.github.io/helm-charts
+    condition: loki.enabled
+
+  - name: promtail
+    version: 6.6.2
+    repository: https://grafana.github.io/helm-charts
+    condition: promtail.enabled
+
+  - name: prometheus
+    version: 15.10.4
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus.enabled
+
+  - name: prometheus-kafka-exporter
+    version: 1.6.0
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus-kafka-exporter.enabled
+
+  - name: prometheus-postgres-exporter
+    version: 2.5.0
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus-postgres-exporter.enabled
+
+  - name: prometheus-redis-exporter
+    version: 4.6.0
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus-redis-exporter.enabled
+
+  - name: prometheus-statsd-exporter
+    version: 0.3.1
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus-statsd-exporter.enabled
+
+maintainers:
+  - name: mariusandra
+    email: marius@posthog.com
+  - name: timgl
+    email: tim@posthog.com
+  - name: jams
+    email: james.g@posthog.com
+  - name: macobo
+    email: karl@posthog.com
+  - name: tiina
+    email: tiina@posthog.com
+  - name: guido
+    email: guido@posthog.com
+  - name: yakko
+    email: yakko@posthog.com

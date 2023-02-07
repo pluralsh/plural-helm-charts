@@ -1,0 +1,39 @@
+suite: ClickHouse cluster role definition
+templates:
+  - templates/clickhouse-operator/clusterrole.yaml
+
+tests:
+  - it: should be empty if clickhouse.enabled is set to false
+    set:
+      clickhouse.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: the manifest should match the snapshot when using default values
+    asserts:
+      - hasDocuments:
+          count: 1
+      - matchSnapshot: {}
+
+  - it: ClusterRole/clickhouse-operator-posthog metadata.namespace override via clickhouse.namespace should work
+    set:
+      clickhouse.namespace: "custom-namespace"
+    documentIndex: 0
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.namespace
+          value: custom-namespace
+
+  - it: ClusterRole/clickhouse-operator-posthog metadata.namespace override via Release.Namespace should work
+    release:
+      namespace: custom-namespace-from-release
+    documentIndex: 0
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.namespace
+          value: custom-namespace-from-release

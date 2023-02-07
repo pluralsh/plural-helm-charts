@@ -1,0 +1,72 @@
+suite: Cronjob backup definition
+templates:
+  - templates/clickhouse-backup-cronjob.yaml
+
+tests:
+  - it: should be empty if backup is false
+    set:
+      clickhouse.backup:
+        enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should match the snapshot when backup is true
+    set:
+      clickhouse.backup:
+        enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - matchSnapshot: {}
+
+  - it: should allow setting imagePullSecrets
+    set:
+      clickhouse:
+        backup:
+          enabled: true
+          image:
+            pullSecrets:
+              - secretnotforyou
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.imagePullSecrets
+          value:
+            - name: secretnotforyou
+
+  - it: allows setting busybox pullSecrets only
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      clickhouse:
+        backup:
+          enabled: true
+      busybox:
+        pullSecrets: [busy]
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.imagePullSecrets
+          value: [name: busy]
+
+  - it: allows setting pgbouncer and exporter secrets
+    set:
+      cloud: local # TODO: remove once secrets.yaml will be fixed/removed
+      busybox:
+        pullSecrets: [busy]
+      clickhouse:
+        backup:
+          enabled: true
+          image:
+            pullSecrets:
+              - clickhouse
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.imagePullSecrets
+          value: 
+          - name: busy
+          - name: clickhouse

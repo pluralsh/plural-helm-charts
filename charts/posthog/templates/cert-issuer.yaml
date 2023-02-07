@@ -1,0 +1,25 @@
+{{- if eq (include "ingress.letsencrypt" .) "true"}}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  annotations:
+    # Install this last as we need 'cert-manager's CDRs API
+    # to be installed first.
+    #
+    # ref: https://github.com/PostHog/charts-clickhouse/issues/168
+    "helm.sh/hook": post-install,post-upgrade
+spec:
+  acme:
+    # Email address used for ACME registration
+    email: {{ coalesce (index (index .Values "cert-manager") "email") .Values.notificationEmail (printf "noreply@%s" .Values.ingress.hostname) }}
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      # Name of a secret used to store the ACME account private key
+      name: posthog-prod-private-key
+    # Add a single challenge solver, HTTP01 using nginx
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+{{- end }}

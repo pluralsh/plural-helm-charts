@@ -1,0 +1,97 @@
+{{- if .Values.migrate.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-migrate-%s" .Release.Name (now | date "2006-01-02-15-04-05") }}
+  labels: {{- include "_snippet-metadata-labels-common" . | nindent 4 }}
+  annotations: {{- include "_snippet-metadata-annotations-common" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      name: {{ printf "%s-migrate-%s" .Release.Name (now | date "2006-01-02-15-04-05") }}
+      annotations:
+        checksum/secrets.yaml: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      labels:
+        app: {{ template "posthog.fullname" . }}
+        release: "{{ .Release.Name }}"
+        {{- if (eq (default .Values.image.tag "none") "latest") }}
+        date: "{{ now | unixEpoch }}"
+        {{- end }}
+        {{- if .Values.worker.podLabels }}
+{{ toYaml .Values.worker.podLabels | indent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.hooks.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+
+      {{- with .Values.hooks.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+
+      {{- with .Values.hooks.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+
+      restartPolicy: Never
+
+      {{- if .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.image.imagePullSecrets | indent 8 }}
+      {{- end }}
+      
+      # I do not know for sure if the old one has been used anywhere, so do both :(
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      containers:
+      - name: migrate-job
+        image: {{ template "posthog.image.fullPath" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -e
+            python manage.py notify_helm_install || true
+            ./bin/migrate
+
+        env:
+        # Kafka env variables
+        {{- include "snippet.kafka-env" . | indent 8 }}
+
+        # Object Storage env variables
+        {{- include "snippet.objectstorage-env" . | indent 8 }}
+
+        # Redis env variables
+        {{- include "snippet.redis-env" . | indent 8 }}
+
+{{- if .Values.env }}
+{{ toYaml .Values.env | indent 8 }}
+{{- end }}
+{{- if .Values.worker.env }}
+{{ toYaml .Values.worker.env | indent 8 }}
+{{- end }}
+{{- if .Values.hooks.migrate.env }}
+{{ toYaml .Values.hooks.migrate.env | indent 8 }}
+{{- end }}
+        # PostHog app settings
+        {{- include "snippet.posthog-env" . | indent 8 }}
+        {{- include "snippet.posthog-sentry-env" . | indent 8 }}
+        - name: PRIMARY_DB
+          value: clickhouse
+        {{- include "snippet.postgresql-migrate-env" . | nindent 8 }}
+        {{- include "snippet.clickhouse-env" . | nindent 8 }}
+        {{- include "snippet.email-env" . | nindent 8 }}
+        resources:
+{{ toYaml .Values.hooks.migrate.resources | indent 10 }}
+      initContainers:
+      {{- include "_snippet-initContainers-wait-for-service-dependencies" . | indent 8 }}
+{{- end }}

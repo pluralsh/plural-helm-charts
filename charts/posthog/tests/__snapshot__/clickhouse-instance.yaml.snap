@@ -1,0 +1,115 @@
+allows passing custom sharding settings:
+  1: |
+    shards:
+    - internalReplication: Disabled
+      name: shard0
+      replicasCount: 3
+      templates:
+        dataVolumeClaimTemplate: default-volume-claim
+        logVolumeClaimTemplate: default-volume-claim
+        podTemplate: clickhouse-v18.16.1
+      weight: 1
+    - name: shard1
+      replicas:
+      - name: replica0
+      - name: replica1
+      - name: replica2
+      templates:
+        dataVolumeClaimTemplate: default-volume-claim
+        logVolumeClaimTemplate: default-volume-claim
+        podTemplate: clickhouse-v18.16.1
+the manifest should match the snapshot when using default values:
+  1: |
+    apiVersion: clickhouse.altinity.com/v1
+    kind: ClickHouseInstallation
+    metadata:
+      name: posthog
+    spec:
+      configuration:
+        clusters:
+        - layout:
+            replicasCount: 1
+            shardsCount: 1
+          name: posthog
+          templates:
+            clusterServiceTemplate: service-template
+            dataVolumeClaimTemplate: data-volumeclaim-template
+            podTemplate: pod-template
+        files:
+          events.proto: |
+            syntax = "proto3";
+            message Event {
+              string uuid = 1;
+              string event = 2;
+              string properties = 3;
+              string timestamp = 4;
+              uint64 team_id = 5;
+              string distinct_id = 6;
+              string created_at = 7;
+              string elements_chain = 8;
+            }
+        profiles:
+          default/allow_experimental_window_functions: "1"
+          default/allow_nondeterministic_mutations: "1"
+        settings:
+          default_database: posthog
+          format_schema_path: /etc/clickhouse-server/config.d/
+        users:
+          admin/networks/ip:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
+          admin/password: a1f31e03-c88e-4ca6-a2df-ad49183d15d9
+          admin/profile: default
+          admin/quota: default
+        zookeeper:
+          nodes:
+          - host: RELEASE-NAME-posthog-zookeeper
+            port: 2181
+      templates:
+        podTemplates:
+        - name: pod-template
+          spec:
+            containers:
+            - command:
+              - /bin/bash
+              - -c
+              - /usr/bin/clickhouse-server --config-file=/etc/clickhouse-server/config.xml
+              image: clickhouse/clickhouse-server:22.8.11.15
+              name: clickhouse
+              ports:
+              - containerPort: 8123
+                name: http
+              - containerPort: 9000
+                name: client
+              - containerPort: 9009
+                name: interserver
+              volumeMounts:
+              - mountPath: /var/lib/clickhouse
+                name: data-volumeclaim-template
+            securityContext:
+              fsGroup: 101
+              runAsGroup: 101
+              runAsUser: 101
+            volumes:
+            - name: data-volumeclaim-template
+              persistentVolumeClaim:
+                claimName: data-volumeclaim-template
+        serviceTemplates:
+        - generateName: clickhouse-RELEASE-NAME
+          name: service-template
+          spec:
+            ports:
+            - name: http
+              port: 8123
+            - name: tcp
+              port: 9000
+            type: ClusterIP
+        volumeClaimTemplates:
+        - name: data-volumeclaim-template
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 20Gi
