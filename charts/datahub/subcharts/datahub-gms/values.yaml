@@ -1,0 +1,227 @@
+# Default values for datahub-gms.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+revisionHistoryLimit: 10
+
+image:
+  repository: linkedin/datahub-gms
+  pullPolicy: IfNotPresent
+  tag:
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+serviceMonitor:
+  create: false
+
+
+podAnnotations: {}
+  # co.elastic.logs/enabled: "true"
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: LoadBalancer # ClusterIP or NodePort
+  port: "8080"
+  targetPort: http
+  protocol: TCP
+  name: http
+  # Annotations to add to the service, this will help in adding
+  # Internal load balancer or various other annotation support in AWS
+  annotations: {}
+    # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+ingress:
+  # className: ""
+  enabled: false
+  extraLabels: {}
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+      redirectPaths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# Extra labels for Deployment
+extraLabels: {}
+  # owner: myteam
+  # environment: test
+
+# Extra environment variables
+# This will be appended to the current 'env:' key. You can use any of the kubernetes env
+# syntax here
+extraEnvs: []
+  # - name: MY_ENVIRONMENT_VAR
+  #   value: the_value_goes_here
+
+extraVolumes: []
+  # - name: extras
+  #   emptyDir: {}
+
+extraVolumeMounts: []
+  # - name: extras
+  #   mountPath: /usr/share/extras
+  #   readOnly: true
+
+extraInitContainers: []
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 8
+
+readinessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 8
+
+#This section is useful if we are installing this chart separately for testing
+# helm install datahub-gms datahub-gms/
+global:
+  datahub_analytics_enabled: true
+  graph_service_impl: neo4j
+
+  elasticsearch:
+    host: "elasticsearch"
+    port: "9200"
+    skipcheck: "false"
+
+  kafka:
+    bootstrap:
+      server: "broker:9092"
+    schemaregistry:
+      url: "http://schema-registry:8081"
+
+  neo4j:
+    host: "neo4j:7474"
+    uri: "bolt://neo4j"
+    username: "neo4j"
+    password:
+      secretRef: "neo4j-secrets"
+      secretKey: "neo4j-password"
+
+  sql:
+    datasource:
+      host: "mysql:3306"
+      url: "jdbc:mysql://mysql:3306/datahub?verifyServerCertificate=false&useSSL=true"
+      driver: "com.mysql.cj.jdbc.Driver"
+      username: "datahub"
+      password:
+        secretRef: "mysql-secrets"
+        secretKey: "mysql-password"
+
+  datahub:
+    version: head
+    monitoring:
+      enablePrometheus: false
+      enableJMXPort: false
+    gms:
+      port: "8080"
+    appVersion: "1.0"
+
+    systemUpdate:
+      ## The following options control settings for datahub-upgrade job which will
+      ## managed ES indices and other update related work
+      enabled: true
+
+    managed_ingestion:
+      enabled: true
+      # defaultCliVersion: "X.X.X" --> Optional: Controls the acryl-datahub package version downloaded from PyPI.
+
+    metadata_service_authentication:
+      enabled: false
+      # tokenService:
+      #   signingKey:
+      #    secretRef: <secret-ref>
+      #    secretKey: <secret-key>
+      #   salt:
+      #    secretRef: <secret-ref>
+      #    secretKey: <secret-key>
+      systemClientId: "__datahub_system"
+      # systemClientSecret:
+      #  secretRef: <secret-ref>
+      #  secretKey: <secret-key>
+
+    encryptionKey:
+      secretRef: "encryption-key-secret"
+      secretKey: "encryption-key-secret"
+
+    enable_retention: false ## Set to true to enable retention on local DB
+
+    ## Enables always emitting a MCL even when no changes are detected. Used for Time Based Lineage when no changes occur.
+    alwaysEmitChangeLog: true
+
+    ## Enables diff mode for graph writes, uses a different code path that produces a diff from previous to next to write relationships instead of wholesale deleting edges and reading
+    enableGraphDiffMode: true
+
+    cache:
+      search:
+        ## Enable general search caching
+        enabled: false
+        ## Configuration for the primary cahe
+        primary:
+          ttlSeconds: 600
+          maxSize: 10000
+        ## Configuration for homepage cache
+        homepage:
+          entityCounts:
+            ttlSeconds: 600
+        ## Lineage specific caching options
+        lineage:
+          ## Enables in-memory cache for searchAcrossLineage query
+          enabled: false
+          ttlSeconds: 86400
+          lightningThreshold: 300
+
+  hostAliases:
+    - ip: "192.168.0.104"
+      hostnames:
+        - "broker"
+        - "mysql"
+        - "elasticsearch"
+        - "neo4j"

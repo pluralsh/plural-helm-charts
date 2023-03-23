@@ -1,0 +1,219 @@
+# Default values for datahub-frontend.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+revisionHistoryLimit: 10
+
+image:
+  repository: linkedin/datahub-frontend-react
+  tag:
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podAnnotations: {}
+  # co.elastic.logs/enabled: "true"
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: LoadBalancer # ClusterIP or NodePort
+  port: 9002
+  targetPort: http
+  protocol: TCP
+  name: http
+  # Annotations to add to the service, this will help in adding
+  # Internal load balancer or various other annotation support in AWS
+  annotations: {}
+    # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+serviceMonitor:
+  create: false
+
+ingress:
+  # className: ""
+  enabled: false
+  extraLabels: {}
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+      redirectPaths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# OIDC auth based on https://datahubproject.io/docs/authentication/guides/sso/configure-oidc-react
+oidcAuthentication:
+  enabled: false
+  # provider: google/okta/azure  <- choose only one
+
+  # clientId: your-client-id
+  # clientSecret: your-client-secret
+  # only needed if you would like to store the client secret in secret
+  # clientSecretRef:
+  #   secretRef: <secret-ref>
+  #   secretKey: <secret-key>
+  # only needed if provider is `okta`
+  # oktaDomain: your-okta-domain.com
+
+  # only needed if provider is `azure`
+  # azureTenantId: your-azure-tenant-id
+  # if needed, it should set meaningful defaults from provider
+  # scope: "openid profile email"
+
+# Extra labels for Deployment
+extraLabels: {}
+  # owner: myteam
+  # environment: test
+
+# Extra environment variables
+# This will be appended to the current 'env:' key. You can use any of the kubernetes env
+# syntax here
+extraEnvs: []
+  # - name: MY_ENVIRONMENT_VAR
+  #   value: the_value_goes_here
+
+extraVolumes: []
+  # - name: extras
+  #   emptyDir: {}
+
+extraVolumeMounts: []
+  # - name: extras
+  #   mountPath: /usr/share/extras
+  #   readOnly: true
+
+extraInitContainers: []
+
+lifecycle: {}
+  # To add a new user to datahub in JAAS config without mounting the user.props file
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo "test_user:password" >> datahub-frontend/conf/user.props"]
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 1Gi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  JMXPORT: 1099
+
+exporters:
+  jmx:
+    enabled: false
+#    image:
+#      repository: bitnami/jmx-exporter
+#      tag: 0.15.0
+#      pullPolicy: IfNotPresent
+#    config:
+#      lowercaseOutputName: true
+#      lowercaseOutputLabelNames: true
+#      rules:
+#        - pattern: ".*"
+#      startDelaySeconds: 30
+#    env: {}
+#    resources: {}
+#    path: /metrics
+#    ports:
+#      jmxxp:
+#        containerPort: 5556
+#        protocol: TCP
+#    livenessProbe:
+#      httpGet:
+#        path: /metrics
+#        port: jmxxp
+#      initialDelaySeconds: 30
+#      periodSeconds: 15
+#      timeoutSeconds: 60
+#      failureThreshold: 8
+#      successThreshold: 1
+#    readinessProbe:
+#      httpGet:
+#        path: /metrics
+#        port: jmxxp
+#      initialDelaySeconds: 30
+#      periodSeconds: 15
+#      timeoutSeconds: 60
+#      failureThreshold: 8
+#      successThreshold: 1
+#    serviceMonitor:
+#      interval: 30s
+#      scrapeTimeout: 30s
+#      scheme: http
+
+livenessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 4
+
+readinessProbe:
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 4
+
+datahub:
+  play:
+    mem:
+      buffer:
+        size: "10MB"
+global:
+  datahub_analytics_enabled: true
+
+  elasticsearch:
+    host: "elasticsearch"
+    port: "9200"
+
+  kafka:
+    bootstrap:
+      server: "broker:9092"
+
+  datahub:
+    version: head
+    gms:
+      port: "8080"
+    appVersion: "1.0"
+    metadata_service_authentication:
+      enabled: false
+      systemClientId: "__datahub_system"
+      # systemClientSecret:
+      #  secretRef: <secret-ref>
+      #  secretKey: <secret-key>

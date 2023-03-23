@@ -1,0 +1,234 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "datahub-frontend.fullname" . }}
+  labels:
+    {{- include "datahub-frontend.labels" . | nindent 4 }}
+    {{- range $key, $val := .Values.extraLabels }}
+    {{ $key }}: {{ $val | quote }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "datahub-frontend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "datahub-frontend.selectorLabels" . | nindent 8 }}
+        {{- range $key, $value := .Values.global.podLabels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "datahub-frontend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        {{- with .Values.global.credentialsAndCertsSecrets }}
+        - name: datahub-certs-dir
+          secret:
+            defaultMode: 0444
+            secretName: {{ .name }}
+        {{- end }}
+      {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      {{- with .Values.extraInitContainers }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ required "Global or specific tag is required" (.Values.image.tag | default .Values.global.datahub.version) }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          lifecycle:
+            {{- toYaml .Values.lifecycle | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 9002
+              protocol: TCP
+          {{- if or .Values.global.datahub.monitoring.enablePrometheus .Values.global.datahub.monitoring.enableJMXPort }}
+            - name: jmx
+              containerPort: 4318
+              protocol: TCP
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /admin
+              port: http
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /admin
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          env:
+            {{- if .Values.global.datahub.monitoring.enablePrometheus }}
+            - name: ENABLE_PROMETHEUS
+              value: "true"
+            {{- end }}
+            - name: DATAHUB_GMS_HOST
+              value: {{ printf "%s-%s" .Release.Name "datahub-gms" }}
+            - name: DATAHUB_GMS_PORT
+              value: "{{ .Values.global.datahub.gms.port }}"
+            - name: DATAHUB_SECRET
+              valueFrom:
+                {{- if .Values.existingGmsSecret }}
+                secretKeyRef:
+                  name: "{{ .Values.existingGmsSecret.name }}"
+                  key: "{{ .Values.existingGmsSecret.key }}"
+                {{- else }}
+                secretKeyRef:
+                  name: {{ printf "%s-gms-secret" .Release.Name }}
+                  key: datahub.gms.secret
+                {{- end }}
+            - name: DATAHUB_APP_VERSION
+              value: "{{ .Values.global.datahub.appVersion }}"
+            - name: DATAHUB_PLAY_MEM_BUFFER_SIZE
+              value: "{{ .Values.datahub.play.mem.buffer.size }}"
+            - name: DATAHUB_ANALYTICS_ENABLED
+              value: "{{ .Values.global.datahub_analytics_enabled }}"
+            - name: KAFKA_BOOTSTRAP_SERVER
+              value: "{{ .Values.global.kafka.bootstrap.server }}"
+            {{- if .Values.global.springKafkaConfigurationOverrides }}
+            {{- range $configName, $configValue := .Values.global.springKafkaConfigurationOverrides }}
+            - name: KAFKA_PROPERTIES_{{ $configName | replace "." "_" | upper }}
+              value: {{ $configValue | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.global.credentialsAndCertsSecrets }}
+            {{- range $envVarName, $envVarValue := .Values.global.credentialsAndCertsSecrets.secureEnv }}
+            - name: KAFKA_PROPERTIES_{{ $envVarName | replace "." "_" | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.global.credentialsAndCertsSecrets.name }}
+                  key: {{ $envVarValue }}
+            {{- end }}
+            {{- end }}
+            - name: ELASTIC_CLIENT_HOST
+              value: "{{ .Values.global.elasticsearch.host }}"
+            - name: ELASTIC_CLIENT_PORT
+              value: "{{ .Values.global.elasticsearch.port }}"
+            {{- if .Values.global.datahub_analytics_enabled }}
+            {{- with .Values.global.elasticsearch.useSSL }}
+            - name: ELASTIC_CLIENT_USE_SSL
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.global.elasticsearch.auth }}
+            - name: ELASTIC_CLIENT_USERNAME
+              value: {{ .username }}
+            - name: ELASTIC_CLIENT_PASSWORD
+              {{- if .password.value }}
+              value: {{ .password.value | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .password.secretRef }}"
+                  key: "{{ .password.secretKey }}"
+              {{- end }}
+            {{- end }}
+            {{- with .Values.global.elasticsearch.indexPrefix }}
+            - name: ELASTIC_INDEX_PREFIX
+              value: {{ . }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.global.kafka.topics }}
+            - name: DATAHUB_TRACKING_TOPIC
+              value: {{ .Values.global.kafka.topics.datahub_usage_event_name}}
+            {{- else }}
+            - name: DATAHUB_TRACKING_TOPIC
+              value: "DataHubUsageEvent_v1"
+            {{- end }}
+            {{- if .Values.global.datahub.metadata_service_authentication.enabled }}
+            - name: METADATA_SERVICE_AUTH_ENABLED
+              value: "true"
+            - name: DATAHUB_SYSTEM_CLIENT_ID
+              value: {{ .Values.global.datahub.metadata_service_authentication.systemClientId }}
+            - name: DATAHUB_SYSTEM_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.datahub.metadata_service_authentication.systemClientSecret.secretRef }}
+                  key: {{ .Values.global.datahub.metadata_service_authentication.systemClientSecret.secretKey }}
+            {{- end }}
+          {{- with .Values.oidcAuthentication }}
+            {{- if .enabled }}
+            - name: AUTH_OIDC_ENABLED
+              value: "true"
+            - name: AUTH_OIDC_CLIENT_ID
+              value: {{ .clientId }}
+            - name: AUTH_OIDC_CLIENT_SECRET
+            {{- if .clientSecretRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .clientSecretRef.secretRef }}
+                  key: {{ .clientSecretRef.secretKey }}
+            {{- else }}
+              value: {{ .clientSecret }}
+            {{- end }}
+            - name: AUTH_OIDC_BASE_URL
+              value: https://{{ (first $.Values.ingress.hosts).host }}
+            {{- if eq .provider "google" }}
+            - name: AUTH_OIDC_DISCOVERY_URI
+              value: https://accounts.google.com/.well-known/openid-configuration
+            - name: AUTH_OIDC_SCOPE
+              value: {{ .scope | default "openid profile email" }}
+            - name: AUTH_OIDC_USER_NAME_CLAIM
+              value: email
+            - name: AUTH_OIDC_USER_NAME_CLAIM_REGEX
+              value: ([^@]+)
+            {{- else if eq .provider "okta" }}
+            - name: AUTH_OIDC_DISCOVERY_URI
+              value: https://{{ .oktaDomain }}/.well-known/openid-configuration
+            - name: AUTH_OIDC_SCOPE
+              value: {{ .scope | default "openid profile email groups" }}
+            {{- else if eq .provider "azure" }}
+            - name: AUTH_OIDC_DISCOVERY_URI
+              value: https://login.microsoftonline.com/{{ .azureTenantId }}/v2.0/.well-known/openid-configuration
+            - name: AUTH_OIDC_SCOPE
+              value: {{ .scope | default "openid profile email" }}
+            {{- else }}
+            {{- fail (printf "unsupported .oidcAuthentication.provider value '%s'" .provider) }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.extraEnvs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          {{- with .Values.global.credentialsAndCertsSecrets }}
+            - name: datahub-certs-dir
+              mountPath: {{ .path | default "/mnt/certs" }}
+          {{- end }}
+          {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
