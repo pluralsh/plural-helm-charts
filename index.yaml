@@ -90,6 +90,37 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/airbyte-bootloader-0.40.41/airbyte-bootloader-0.40.41.tgz
     version: 0.40.41
+  airflow:
+  - apiVersion: v2
+    appVersion: 2.6.0
+    created: "2023-05-02T15:57:14.324397771Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.helm.sh/stable
+      version: 8.6.4
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.helm.sh/stable
+      version: 10.5.7
+    description: Airflow Helm Chart (User Community) - the standard way to deploy
+      Apache Airflow on Kubernetes with Helm
+    digest: 86bf701f6170ecb054be6fec46b9f08bfbedecf8367e0c5d736be5174f967744
+    home: https://github.com/airflow-helm/charts/tree/main/charts/airflow
+    icon: https://avatars.githubusercontent.com/u/71061241
+    keywords:
+    - airflow
+    - dag
+    - workflow
+    maintainers:
+    - name: thesuperzapper
+      url: https://github.com/thesuperzapper
+    name: airflow
+    sources:
+    - https://github.com/airflow-helm/charts/tree/main/charts/airflow
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/airflow-8.7.1/airflow-8.7.1.tgz
+    version: 8.7.1
   chatwoot:
   - apiVersion: v2
     appVersion: v2.10.0
@@ -1777,4 +1808,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2023-03-23T10:27:46.180029444Z"
+generated: "2023-05-02T15:57:14.324514572Z"
