@@ -18,6 +18,7 @@ jobs:
 
       - name: Add dependency chart repos
         run: |
+          helm repo add stable https://charts.helm.sh/stable
           helm repo add plural https://pluralsh.github.io/plural-helm-charts
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo add bitnami-archive https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
