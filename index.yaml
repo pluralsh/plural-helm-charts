@@ -421,6 +421,33 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/goldilocks-3.3.0/goldilocks-3.3.0.tgz
     version: 3.3.0
+  harbor:
+  - apiVersion: v1
+    appVersion: dev
+    created: "2023-05-03T10:43:01.241046133Z"
+    description: An open source trusted cloud native registry that stores, signs,
+      and scans content
+    digest: 3d3a83bb282c35be220cb7a1128b5c422b82dc505e2d37974e2b5e9c02c3f307
+    home: https://goharbor.io
+    icon: https://raw.githubusercontent.com/goharbor/website/master/static/img/logos/harbor-icon-color.png
+    keywords:
+    - docker
+    - registry
+    - harbor
+    maintainers:
+    - email: yinw@vmware.com
+      name: Wenkai Yin
+    - email: hweiwei@vmware.com
+      name: Weiwei He
+    - email: yshengwen@vmware.com
+      name: Shengwen Yu
+    name: harbor
+    sources:
+    - https://github.com/goharbor/harbor
+    - https://github.com/goharbor/harbor-helm
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/harbor-1.4.0-dev/harbor-1.4.0-dev.tgz
+    version: 1.4.0-dev
   hasura:
   - apiVersion: v2
     appVersion: v2.13.0-ce
@@ -1838,4 +1865,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2023-05-03T08:45:39.504932507Z"
+generated: "2023-05-03T10:43:01.241153035Z"
