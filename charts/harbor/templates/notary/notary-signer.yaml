@@ -67,13 +67,6 @@ spec:
             secretKeyRef:
               name: {{ template "harbor.notary-server" . }}
               key: NOTARY_SIGNER_DB_URL
-        {{- if .Values.database.external.existingSecret }}
-        - name: POSTGRESQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.external.existingSecret }}
-              key: password
-        {{- end }}
         - name: NOTARY_SIGNER_DEFAULTALIAS
           value: defaultalias
 {{- with .Values.notary.signer.extraEnvVars }}

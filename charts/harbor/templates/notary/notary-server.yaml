@@ -63,13 +63,6 @@ spec:
         env:
         - name: MIGRATIONS_PATH
           value: migrations/server/postgresql
-        {{- if .Values.database.external.existingSecret }}
-        - name: POSTGRESQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.external.existingSecret }}
-              key: password
-        {{- end }}
         - name: DB_URL
           valueFrom:
             secretKeyRef:
