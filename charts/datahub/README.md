@@ -39,6 +39,7 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | datahubUpgrade.securityContext | object | `{}` | Container security context for datahubUpgrade jobs |
 | datahubUpgrade.podAnnotations | object | `{}` | Pod annotations for datahubUpgrade jobs |
 | datahubUpgrade.restoreIndices.resources | object | '{}' | Kube Resource definitions for the datahub upgrade job 'restore indices' |
+| datahubUpgrade.restoreIndices.extraSidecars | list | `[]` | Add additional sidecar containers to the job pod |
 | elasticsearchSetupJob.enabled | bool | `true` | Enable setup job for elasicsearch |
 | elasticsearchSetupJob.image.repository | string | `"linkedin/datahub-elasticsearch-setup"` | Image repository for elasticsearchSetupJob |
 | elasticsearchSetupJob.image.tag | string | `"v0.10.0"` | Image repository for elasticsearchSetupJob |
@@ -47,6 +48,7 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | elasticsearchSetupJob.podSecurityContext | object | `{"fsGroup": 1000}` | Pod security context for elasticsearchSetupJob |
 | elasticsearchSetupJob.securityContext | object | `{"runAsUser": 1000}` | Container security context for elasticsearchSetupJob |
 | elasticsearchSetupJob.podAnnotations | object | `{}` | Pod annotations for elasticsearchSetupJob |
+| elasticsearchSetupJob.extraSidecars | list | `[]` | Add additional sidecar containers to the job pod |
 | kafkaSetupJob.enabled | bool | `true` | Enable setup job for kafka |
 | kafkaSetupJob.image.repository | string | `"linkedin/datahub-kafka-setup"` | Image repository for kafkaSetupJob |
 | kafkaSetupJob.image.tag | string | `"v0.10.0"` | Image repository for kafkaSetupJob |
@@ -55,6 +57,7 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | kafkaSetupJob.podSecurityContext | object | `{"fsGroup": 1000}` | Pod security context for kafkaSetupJob |
 | kafkaSetupJob.securityContext | object | `{"runAsUser": 1000}` | Container security context for kafkaSetupJob |
 | kafkaSetupJob.podAnnotations | object | `{}` | Pod annotations for kafkaSetupJob |
+| kafkaSetupJob.extraSidecars | list | `[]` | Add additional sidecar containers to the job pod |
 | mysqlSetupJob.enabled | bool | `false` | Enable setup job for mysql |
 | mysqlSetupJob.image.repository | string | `"acryldata/datahub-mysql-setup"` | Image repository for mysqlSetupJob |
 | mysqlSetupJob.image.tag | string | `"v0.10.0"` | Image repository for mysqlSetupJob |
@@ -63,6 +66,7 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | mysqlSetupJob.podSecurityContext | object | `{"fsGroup": 1000}` | Pod security context for mysqlSetupJob |
 | mysqlSetupJob.securityContext | object | `{"runAsUser": 1000}` | Container security context for mysqlSetupJob |
 | mysqlSetupJob.podAnnotations | object | `{}` | Pod annotations for mysqlSetupJob |
+| mysqlSetupJob.extraSidecars | list | `[]` | Add additional sidecar containers to the job pod |
 | postgresqlSetupJob.enabled | bool | `false` | Enable setup job for postgresql |
 | postgresqlSetupJob.image.repository | string | `"acryldata/datahub-postgres-setup"` | Image repository for postgresqlSetupJob |
 | postgresqlSetupJob.image.tag | string | `"v0.10.0"` | Image repository for postgresqlSetupJob |
@@ -71,6 +75,8 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | postgresqlSetupJob.podSecurityContext | object | `{"fsGroup": 1000}` | Pod security context for mysqlSetupJob |
 | postgresqlSetupJob.securityContext | object | `{"runAsUser": 1000}` | Container security context for mysqlSetupJob |
 | postgresqlSetupJob.podAnnotations | object | `{}` | Pod annotations for mysqlSetupJob |
+| postgresqlSetupJob.extraSidecars | list | `[]` | Add additional sidecar containers to the job pod |
+| datahubSystemUpdate.extraSidecars | list | `[]` | Add additional sidecar containers to the job pod |
 | global.strict_mode | boolean | true | Enables validations in helm charts to ensure features work as expected. Recommended NOT TO CHANGE. |
 | global.datahub_standalone_consumers_enabled | boolean | true | Enable standalone consumers for kafka |
 | global.datahub_analytics_enabled | boolean | true | Enable datahub usage analytics |
@@ -89,7 +95,7 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | global.kafka.topics.metadata_change_log_versioned_topic_name | string | `"MetadataChangeLog_Versioned_v1"` | Kafka topic name for Versioned Metadata Change Log events |
 | global.kafka.topics.metadata_change_log_timeseries_topic_name | string | `"MetadataChangeLog_Timeseries_v1"` | Kafka topic name for Timeseries Metadata Change Log events |
 | global.kafka.topics.platform_event_topic_name | string | `"PlatformEvent_v1"` | Kafka topic name for Platform events |
-| global.kafka.schemaregistry.url | string | `"http://prerequisites-cp-schema-registry:8081"` | URL to kafka schema registry |
+| global.kafka.schemaregistry.url | string | `` | URL to kafka schema registry if using `KAFKA` type |
 | global.neo4j.host | string | `"prerequisites-neo4j:7474"` | Neo4j host address (with port) |
 | global.neo4j.uri | string | `"bolt://prerequisites-neo4j"` | Neo4j URI |
 | global.neo4j.username | string | `"neo4j"` | Neo4j user name |
@@ -123,6 +129,7 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | postgresqlSetupJob.password.secretKey | string | `"mysql-password"` | Secret key that contains the postgresqlSetupJob SQL password (overrides global value) |
 | postgresqlSetupJob.password.value | string | `"mysql-password"` | Alternative to using the secret above, uses raw string value for postgresqlSetupJob SQL login (overrides global value) |
 | acryl-datahub-actions.ingestionSecretFiles.name | string | `""` | Name of the k8s secret that holds any secret files (e.g., SSL certificates and private keys) that are used in your ingestion recipes. The keys in the secret will be mounted as individual files under `/etc/datahub/ingestion-secret-files` |
+| acryl-datahub-actions.ingestionSecretFiles.defaultMode | string | `""` | The permission mode for the volume that mounts k8s secret under `/etc/datahub/ingestion-secret-files`, default value is 0444 which allows read access by owner, group, and other users |
 | global.credentialsAndCertsSecrets.name | string | `""` | Name of the secret that holds SSL certificates (keystores, truststores) |
 | global.credentialsAndCertsSecrets.path | string | `"/mnt/certs"` | Path to mount the SSL certificates |
 | global.credentialsAndCertsSecrets.secureEnv | map | `{}` | Map of SSL config name and the corresponding value in the secret |
@@ -132,7 +139,7 @@ helm install datahub datahub/datahub --values <<path-to-values-file>>
 | global.elasticsearch.auth.password.secretRef | string | `""` | Secret that contains the elasticsearch password |
 | global.elasticsearch.auth.password.secretKey | string | `""` | Secret key that contains the elasticsearch password |
 | global.elasticsearch.auth.password.value | string | `""` | Alternative to using the secret above, uses raw string value instead |
-| global.kafka.schemaregistry.type | string | `"KAFKA"` | Type of schema registry (KAFKA or AWS_GLUE) |
+| global.kafka.schemaregistry.type | string | `"INTERNAL"` | Type of schema registry (INTERNAL, KAFKA, or AWS_GLUE) |
 | global.kafka.schemaregistry.glue.region | string | `""` | Region of the AWS Glue schema registry |
 | global.kafka.schemaregistry.glue.registry | string | `""` | Name of the AWS Glue schema registry |
 | datahub.metadata_service_authentication.enabled | bool | `false` | Whether Metadata Service Authentication is enabled. |

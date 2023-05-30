@@ -39,6 +39,10 @@ acryl-datahub-actions:
   image:
     repository: acryldata/datahub-actions
     tag: "v0.0.11"
+  # mount the k8s secret as a volume in the container, each key name is mounted as a file on the mount path /etc/datahub/ingestion-secret-files
+  # ingestionSecretFiles:
+  #   name: ${K8S_SECRET_NAME}
+  #   defaultMode: "0444"
   resources:
     limits:
       memory: 512Mi
@@ -98,6 +102,11 @@ elasticsearchSetupJob:
     helm.sh/hook-weight: "-5"
     helm.sh/hook-delete-policy: before-hook-creation
   podAnnotations: {}
+  # Add extra sidecar containers to job pod
+  extraSidecars: []
+    # - name: my-image-name
+    #   image: my-image
+    #   imagePullPolicy: Always
 
 kafkaSetupJob:
   enabled: true
@@ -123,6 +132,11 @@ kafkaSetupJob:
     helm.sh/hook-weight: "-5"
     helm.sh/hook-delete-policy: before-hook-creation
   podAnnotations: {}
+  # Add extra sidecar containers to job pod
+  extraSidecars: []
+    # - name: my-image-name
+    #   image: my-image
+    #   imagePullPolicy: Always
 
 mysqlSetupJob:
   enabled: true
@@ -153,6 +167,11 @@ mysqlSetupJob:
   # password:
   #   secretRef: mysqlSetupJob-secret
   #   secretKey: mysqlSetupJob-password
+  # Add extra sidecar containers to job pod
+  extraSidecars: []
+    # - name: my-image-name
+    #   image: my-image
+    #   imagePullPolicy: Always
 
 postgresqlSetupJob:
   enabled: false
@@ -183,6 +202,15 @@ postgresqlSetupJob:
   # password:
   #   secretRef: postgresqlSetupJob-secret
   #   secretKey: postgresqlSetupJob-password
+  # Add extra sidecar containers to job pod
+  extraSidecars: []
+    # - name: my-image-name
+    #   image: my-image
+    #   imagePullPolicy: Always
+  # Optionally set a specific database using extraEnvs
+  # extraEnvs: []
+  #   - name: "DATAHUB_DB_NAME"
+  #     value: "dh"
 
 ## No code data migration
 datahubUpgrade:
@@ -206,6 +234,18 @@ datahubUpgrade:
     helm.sh/hook-weight: "-2"
     helm.sh/hook-delete-policy: before-hook-creation
   podAnnotations: {}
+  # Add extra sidecar containers to job pod
+  extraSidecars: []
+    # - name: my-image-name
+    #   image: my-image
+    #   imagePullPolicy: Always
+  extraInitContainers: []
+  cleanupJob:
+    # Add extra sidecar containers to job pod
+    extraSidecars: []
+      # - name: my-image-name
+      #   image: my-image
+      #   imagePullPolicy: Always
   restoreIndices:
     resources:
       limits:
@@ -214,7 +254,15 @@ datahubUpgrade:
       requests:
         cpu: 300m
         memory: 256Mi
-  extraInitContainers: []
+    # Add extra sidecar containers to job pod
+    extraSidecars: []
+      # - name: my-image-name
+      #   image: my-image
+      #   imagePullPolicy: Always
+    # Optionally set a specific PostgreSQL database name using extraEnvs
+    # extraEnvs:
+    #   - name: "DATAHUB_DB_NAME"
+    #    value: "dh"
 
 ## Runs system update processes
 ## Includes: Elasticsearch Indices Creation/Reindex (See global.elasticsearch.index for additional configuration)
@@ -241,6 +289,11 @@ datahubSystemUpdate:
       cpu: 300m
       memory: 256Mi
   extraInitContainers: []
+  # Add extra sidecar containers to job pod
+  extraSidecars: []
+    # - name: my-image-name
+    #   image: my-image
+    #   imagePullPolicy: Always
 
 global:
   strict_mode: true
@@ -254,6 +307,8 @@ global:
     skipcheck: "false"
     insecure: "false"
     useSSL: "false"
+    # If you want to specify index prefixes use indexPrefix
+    # indexPrefix: "dh"
 
     ## The following section controls when and how reindexing of elasticsearch indices are performed
     index:
@@ -320,6 +375,81 @@ global:
         ## graph dao max result size
         maxResult: 10000
 
+      custom:
+        enabled: false
+        # See documentation: https://datahubproject.io/docs/how/search/#customizing-search
+        config:
+          # Notes:
+          #
+          # First match wins
+          #
+          # queryRegex = Java regex syntax
+          #
+          # functionScores - See the following for function score syntax
+          # https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-dsl-function-score-query.html
+
+          queryConfigurations:
+            # Select *
+            - queryRegex: '[*]|'
+              simpleQuery: false
+              prefixMatchQuery: false
+              exactMatchQuery: false
+              boolQuery:
+                must_not:
+                  term:
+                    deprecated:
+                      value: true
+              functionScore:
+                functions:
+                  - filter:
+                      term:
+                        materialized:
+                          value: true
+                    weight: 0.8
+                score_mode: multiply
+                boost_mode: multiply
+
+            # Criteria for exact-match only
+            # Contains quoted or contains underscore then use exact match query
+            - queryRegex: >-
+                ["'].+["']|\S+_\S+
+              simpleQuery: false
+              prefixMatchQuery: true
+              exactMatchQuery: true
+              functionScore:
+                functions:
+                  - filter:
+                      term:
+                        materialized:
+                          value: true
+                    weight: 0.8
+                  - filter:
+                      term:
+                        deprecated:
+                          value: true
+                    weight: 0
+                score_mode: multiply
+                boost_mode: multiply
+            # default
+            - queryRegex: .*
+              simpleQuery: true
+              prefixMatchQuery: true
+              exactMatchQuery: true
+              boolQuery:
+                must_not:
+                  term:
+                    deprecated:
+                      value: true
+              functionScore:
+                functions:
+                  - filter:
+                      term:
+                        materialized:
+                          value: true
+                    weight: 0.8
+                score_mode: multiply
+                boost_mode: multiply
+
   kafka:
     bootstrap:
       server: "prerequisites-kafka:9092"
@@ -342,8 +472,14 @@ global:
     # partitions: 3
     # replicationFactor: 3
     schemaregistry:
-      url: "http://prerequisites-cp-schema-registry:8081"
-      type: KAFKA
+      # GMS Implementation - `url` configured based on component context
+      type: INTERNAL
+      # Confluent Kafka Implementation
+      # type: KAFKA
+      # url: "http://prerequisites-cp-schema-registry:8081"
+
+      # Glue Implementation - `url` not applicable
+      # type: AWS_GLUE
       # glue:
       #   region: us-east-1
       #   registry: datahub
@@ -385,8 +521,14 @@ global:
       # --------------OR----------------
       #   value: password
 
+      # If you want to use specific PostgreSQL database use extraEnvs
+      # extraEnvs:
+      #  - name: "DATAHUB_DB_NAME"
+      #    value: "dh"
+
+
   datahub:
-    version: v0.10.0
+    version: v0.10.3
     gms:
       port: "8080"
       nodePort: "30001"
@@ -418,14 +560,14 @@ global:
 
     managed_ingestion:
       enabled: true
-      defaultCliVersion: "0.10.0"
+      defaultCliVersion: "0.10.3"
 
     metadata_service_authentication:
       enabled: false
       systemClientId: "__datahub_system"
       systemClientSecret:
         secretRef: "datahub-auth-secrets"
-        secretKey: "token_service_signing_key"
+        secretKey: "system_client_secret"
       tokenService:
         signingKey:
           secretRef: "datahub-auth-secrets"
@@ -445,7 +587,7 @@ global:
       #    salt: <salt value>
 
     ## Enables always emitting a MCL even when no changes are detected. Used for Time Based Lineage when no changes occur.
-    alwaysEmitChangeLog: true
+    alwaysEmitChangeLog: false
 
     ## Enables diff mode for graph writes, uses a different code path that produces a diff from previous to next to write relationships instead of wholesale deleting edges and reading
     enableGraphDiffMode: true
