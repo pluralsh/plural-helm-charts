@@ -1,0 +1,41 @@
+apiVersion: v2
+name: n8n
+version: 0.12.0
+appVersion: 1.5.1
+type: application
+
+description: "A Kubernetes Helm chart for n8n a free and open fair-code licensed node based Workflow Automation Tool. Easily automate tasks across different services."
+home: https://github.com/8gears/n8n-helm-chart
+icon: https://avatars1.githubusercontent.com/u/45487711?s=200&v=4
+keywords:
+  - Workflow Automation
+  - Workflow
+  - iPaaS
+  - integration-framework
+  - low-code-plattform
+  - low-code
+sources:
+  - https://github.com/n8n-io/n8n
+  - https://n8n.io/
+maintainers:
+  - name: Vadim Bauer
+
+dependencies:
+  - name: redis
+    version: 17.2.0
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: "Updated App Version to 1.5.1"
+    - kind: added
+      description: "Added support for specifying initContainers and probes"
+    - kind: changed
+      description: "Updated App Version to 0.236.3"
+    - kind: added
+      description: "Support Kubernetes 1.25"
+      links:
+        - name: GitHub PR
+          url: https://github.com/8gears/n8n-helm-chart/pull/46

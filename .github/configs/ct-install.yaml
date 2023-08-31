@@ -6,7 +6,8 @@ chart-dirs:
   - charts
 chart-repos:
   - plural=https://pluralsh.github.io/plural-helm-charts
-helm-extra-args: "--timeout 600s"  
+  - bitnami=https://charts.bitnami.com/bitnami
+helm-extra-args: "--timeout 600s"
 validate-chart-schema: false
 validate-maintainers: true
 validate-yaml: true
