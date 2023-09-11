@@ -353,6 +353,7 @@ schema:
   resources: {}
   containerSecurityContext: {}
   securityContext: {}
+  extraEnv: ~
 
 elasticsearch:
   enabled: true
