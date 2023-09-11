@@ -110,6 +110,9 @@ spec:
               value: {{ $storeConfig.sql.password }}
               {{- end }}
             {{- end }}
+            {{- if .Values.schema.extraEnv }}
+            {{ toYaml .Values.schema.extraEnv | nindent 12 }}
+            {{- end }}
         {{- end }}
         {{- end }}
         {{- else }}
@@ -169,6 +172,9 @@ spec:
               value: {{ $storeConfig.sql.password }}
               {{- end }}
             {{- end }}
+            {{- end }}
+            {{- if .Values.schema.extraEnv }}
+            {{ toYaml .Values.schema.extraEnv | nindent 12 }}
             {{- end }}
         {{- end }}
           {{- with .Values.schema.resources }}
@@ -316,6 +322,9 @@ spec:
               value: {{ $storeConfig.sql.password }}
               {{- end }}
             {{- end }}
+            {{- end }}
+            {{- if .Values.schema.extraEnv }}
+            {{ toYaml .Values.schema.extraEnv | nindent 12 }}
             {{- end }}
         {{- end }}
           {{- with .Values.schema.resources }}
