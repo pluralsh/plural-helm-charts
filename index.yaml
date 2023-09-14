@@ -431,6 +431,23 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/etcd-operator-0.1.0/etcd-operator-0.1.0.tgz
     version: 0.1.0
+  gateway:
+  - apiVersion: v2
+    appVersion: 1.19.0
+    created: "2023-09-14T13:37:50.022826051Z"
+    description: Helm chart for deploying Istio gateways
+    digest: 336a730ad16846e63feead96ad8406ec0a48b79c443722b3c2a6178cfd71c851
+    icon: https://istio.io/latest/favicons/android-192x192.png
+    keywords:
+    - istio
+    - gateways
+    name: gateway
+    sources:
+    - https://github.com/istio/istio
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/gateway-1.19.1/gateway-1.19.1.tgz
+    version: 1.19.1
   goldilocks:
   - apiVersion: v2
     appVersion: v3.1.4
@@ -2117,4 +2134,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2023-09-11T22:13:58.024349412Z"
+generated: "2023-09-14T13:37:50.022932351Z"
