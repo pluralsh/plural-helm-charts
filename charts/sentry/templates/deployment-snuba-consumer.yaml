@@ -56,6 +56,13 @@ spec:
       imagePullSecrets:
 {{ toYaml .Values.images.snuba.imagePullSecrets | indent 8 }}
       {{- end }}
+      {{- if .Values.dnsPolicy }}
+      dnsPolicy: {{ .Values.dnsPolicy | quote }}
+      {{- end }}
+      {{- if .Values.dnsConfig }}
+      dnsConfig:
+{{ toYaml .Values.dnsConfig | indent 8 }}
+      {{- end }}
       {{- if .Values.snuba.consumer.securityContext }}
       securityContext:
 {{ toYaml .Values.snuba.consumer.securityContext | indent 8 }}
@@ -64,7 +71,46 @@ spec:
       - name: {{ .Chart.Name }}-snuba
         image: "{{ template "snuba.image" . }}"
         imagePullPolicy: {{ default "IfNotPresent" .Values.images.snuba.pullPolicy }}
-        command: ["snuba", "consumer", "--storage", "errors", "--auto-offset-reset=latest", "--max-batch-time-ms", "750"]
+        command:
+          - "snuba"
+          - "consumer"
+          - "--storage"
+          - "errors"
+          - "--auto-offset-reset"
+          - "{{ .Values.snuba.consumer.autoOffsetReset }}"
+          - "--max-batch-time-ms"
+          - "750"
+          {{- if .Values.snuba.consumer.maxBatchSize }}
+          - "--max-batch-size"
+          - "{{ .Values.snuba.consumer.maxBatchSize }}"
+          {{- end }}
+          {{- if .Values.snuba.consumer.processes }}
+          - "--processes"
+          - "{{ .Values.snuba.consumer.processes }}"
+          {{- end }}
+          {{- if .Values.snuba.consumer.inputBlockSize }}
+          - "--input-block-size"
+          - "{{ .Values.snuba.consumer.inputBlockSize }}"
+          {{- end }}
+          {{- if .Values.snuba.consumer.outputBlockSize }}
+          - "--output-block-size"
+          - "{{ .Values.snuba.consumer.outputBlockSize }}"
+          {{- end }}
+          {{- if .Values.snuba.consumer.maxBatchTimeMs }}
+          - "--max-batch-time-ms"
+          - "{{ .Values.snuba.consumer.maxBatchTimeMs }}"
+          {{- end }}
+          {{- if .Values.snuba.consumer.queuedMaxMessagesKbytes }}
+          - "--queued-max-messages-kbytes"
+          - "{{ .Values.snuba.consumer.queuedMaxMessagesKbytes }}"
+          {{- end }}
+          {{- if .Values.snuba.consumer.queuedMinMessages }}
+          - "--queued-min-messages"
+          - "{{ .Values.snuba.consumer.queuedMinMessages }}"
+          {{- end }}
+          {{- if .Values.snuba.consumer.noStrictOffsetReset }}
+          - "--no-strict-offset-reset"
+          {{- end }}
         ports:
         - containerPort: {{ template "snuba.port" }}
         env:
@@ -79,9 +125,22 @@ spec:
         - mountPath: /etc/snuba
           name: config
           readOnly: true
+{{- if .Values.snuba.consumer.volumeMounts }}
+{{ toYaml .Values.snuba.consumer.volumeMounts | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.snuba.consumer.resources | indent 12 }}
+{{- if .Values.snuba.consumer.containerSecurityContext }}
+        securityContext:
+{{ toYaml .Values.snuba.consumer.containerSecurityContext | indent 12 }}
+{{- end }}
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}-snuba
+      {{- end }}
       volumes:
         - name: config
           configMap:
             name: {{ template "sentry.fullname" . }}-snuba
+{{- if .Values.snuba.consumer.volumes }}
+{{ toYaml .Values.snuba.consumer.volumes | indent 8 }}
+{{- end }}

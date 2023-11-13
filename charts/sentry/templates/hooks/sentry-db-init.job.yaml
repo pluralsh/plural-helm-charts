@@ -15,6 +15,9 @@ metadata:
     "helm.sh/hook-delete-policy": "{{ if .Values.hooks.removeOnSuccess }}hook-succeeded,{{ end }}before-hook-creation"
     "helm.sh/hook-weight": "6"
 spec:
+  {{- if .Values.hooks.activeDeadlineSeconds }}
+  activeDeadlineSeconds: {{ .Values.hooks.activeDeadlineSeconds }}
+  {{- end}}
   template:
     metadata:
       name: {{ template "sentry.fullname" . }}-db-init
@@ -32,11 +35,42 @@ spec:
         {{- if .Values.sentry.worker.podLabels }}
 {{ toYaml .Values.sentry.worker.podLabels | indent 8 }}
         {{- end }}
+        {{- if .Values.hooks.dbInit.podLabels }}
+{{ toYaml .Values.hooks.dbInit.podLabels | indent 8 }}
+        {{- end }}
     spec:
+      {{- if .Values.hooks.dbInit.affinity }}
+      affinity:
+{{ toYaml .Values.hooks.dbInit.affinity | indent 8 }}
+      {{- end }}
+      {{- if .Values.hooks.dbInit.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.hooks.dbInit.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.hooks.dbInit.tolerations }}
+      tolerations:
+{{ toYaml .Values.hooks.dbInit.tolerations | indent 8 }}
+      {{- end }}
       restartPolicy: Never
       {{- if .Values.images.sentry.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.images.sentry.imagePullSecrets | indent 8 }}
+      {{- end }}
+      {{- if .Values.dnsPolicy }}
+      dnsPolicy: {{ .Values.dnsPolicy | quote }}
+      {{- end }}
+      {{- if .Values.dnsConfig }}
+      dnsConfig:
+{{ toYaml .Values.dnsConfig | indent 8 }}
+      {{- end }}
+      {{- if .Values.hooks.dbInit.securityContext }}
+      securityContext:
+{{ toYaml .Values.hooks.dbInit.securityContext | indent 8 }}
+      {{- else }}
+      {{- if .Values.hooks.securityContext }}
+      securityContext:
+{{ toYaml .Values.hooks.securityContext | indent 8 }}
+      {{- end }}
       {{- end }}
       containers:
       - name: db-init-job
@@ -44,11 +78,7 @@ spec:
         imagePullPolicy: {{ default "IfNotPresent" .Values.images.sentry.pullPolicy }}
         command: ["sentry","upgrade","--noinput"]
         env:
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ default (include "sentry.postgresql.fullname" .) .Values.postgresql.existingSecret }}
-              key: {{ default "postgresql-password" .Values.postgresql.existingSecretKey }}
+{{ include "sentry.env" . | indent 8 }}
         {{- if .Values.hooks.dbInit.env }}
 {{ toYaml .Values.hooks.dbInit.env | indent 8 }}
         {{- end }}
@@ -56,8 +86,15 @@ spec:
         - mountPath: /etc/sentry
           name: config
           readOnly: true
+{{- if .Values.hooks.dbInit.volumeMounts }}
+{{ toYaml .Values.hooks.dbInit.volumeMounts | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.hooks.dbInit.resources | indent 10 }}
+{{- if .Values.hooks.dbInit.containerSecurityContext }}
+        securityContext:
+{{ toYaml .Values.hooks.dbInit.containerSecurityContext | indent 10 }}
+{{- end }}
 {{- if .Values.hooks.dbInit.sidecars }}
 {{ toYaml .Values.hooks.dbInit.sidecars | indent 6 }}
 {{- end }}
@@ -68,4 +105,7 @@ spec:
 {{- if .Values.hooks.dbInit.volumes }}
 {{ toYaml .Values.hooks.dbInit.volumes | indent 6 }}
 {{- end }}
+      {{- if .Values.hooks.shareProcessNamespace }}
+      shareProcessNamespace: {{ .Values.hooks.shareProcessNamespace }}
+      {{- end }}
 {{- end -}}

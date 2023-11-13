@@ -22,10 +22,13 @@ data:
 
     processing:
       enabled: true
+      {{- if .Values.geodata.path }}
+      geoip_path: {{ .Values.geodata.path | quote }}
+      {{- end }}
 
       kafka_config:
         - name: "bootstrap.servers"
-          value: {{ printf "%s:%s" (include "sentry.kafka.host" .) (include "sentry.kafka.port" .) }}
+          value: {{ (include "sentry.kafka.bootstrap_servers_string" .) | quote }}
         - name: "message.max.bytes"
           value: 50000000  # 50MB or bust
 
@@ -34,5 +37,8 @@ data:
       {{- else }}
       redis: "redis://{{ $redisHost }}:{{ $redisPort }}"
       {{- end }}
+      topics:
+        metrics_transactions: ingest-performance-metrics
+        metrics_sessions: ingest-metrics
 
 {{ .Values.config.relay | indent 4 }}
