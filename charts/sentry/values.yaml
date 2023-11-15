@@ -226,6 +226,7 @@ externalPostgresql:
   username: postgres
 externalRedis:
   port: 6379
+  tls: false
 filestore:
   backend: filesystem
   filesystem:
