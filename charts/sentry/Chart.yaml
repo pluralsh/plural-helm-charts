@@ -1,32 +1,42 @@
 apiVersion: v2
-appVersion: 21.5.1
+appVersion: 23.6.1
 dependencies:
+- condition: sourcemaps.enabled
+  name: memcached
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 6.5.2
 - condition: redis.enabled
   name: redis
-  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
-  version: 9.3.2
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 17.11.3
 - condition: kafka.enabled
   name: kafka
-  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
-  version: 12.0.0
+  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+  version: 16.3.2
 - condition: clickhouse.enabled
   name: clickhouse
   repository: https://sentry-kubernetes.github.io/charts
-  version: 3.0.0
+  version: 3.3.0
+- condition: zookeeper.enabled
+  name: zookeeper
+  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+  version: 9.0.0
 - alias: rabbitmq
   condition: rabbitmq.enabled
   name: rabbitmq
-  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
-  version: 8.9.1
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 11.15.3
 - condition: postgresql.enabled
   name: postgresql
-  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
-  version: 10.2.4
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 12.5.1
 - condition: nginx.enabled
   name: nginx
-  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
-  version: 6.0.5
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 14.2.2
 description: A Helm chart for Kubernetes
+maintainers:
+- name: sentry-kubernetes
 name: sentry
 type: application
-version: 11.3.3
+version: 19.4.0

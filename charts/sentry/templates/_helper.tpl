@@ -7,16 +7,13 @@
     {{- end -}}
 {{- end -}}
 
-{{- define "sentry.labels" -}}
-app: {{ template "sentry.fullname" . }}
-chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-release: "{{ .Release.Name }}"
-heritage: "{{ .Release.Service }}"
-{{- end -}}
-
 {{- define "nginx.port" -}}{{ default "8080" .Values.nginx.containerPort }}{{- end -}}
 {{- define "relay.port" -}}3000{{- end -}}
+{{- define "relay.healthCheck.readinessRequestPath" -}}/api/relay/healthcheck/ready/{{- end -}}
+{{- define "relay.healthCheck.livenessRequestPath" -}}/api/relay/healthcheck/live/{{- end -}}
 {{- define "sentry.port" -}}9000{{- end -}}
+{{- define "sentry.healthCheck.requestPath" -}}/_health/{{- end -}}
+{{- define "relay.healthCheck.requestPath" -}}/api/relay/healthcheck/live/{{- end -}}
 {{- define "snuba.port" -}}1218{{- end -}}
 {{- define "symbolicator.port" -}}3021{{- end -}}
 
@@ -39,7 +36,7 @@ heritage: "{{ .Release.Service }}"
 {{- define "symbolicator.image" -}}
 {{- default "getsentry/symbolicator" .Values.images.symbolicator.repository -}}
 :
-{{- .Values.images.symbolicator.tag -}}
+{{- default .Chart.AppVersion .Values.images.symbolicator.tag -}}
 {{- end -}}
 
 {{- define "dbCheck.image" -}}
@@ -71,6 +68,68 @@ If release name contains chart name it will be used as a full name.
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
+{{- end -}}
+
+
+{{/*
+Get KubeVersion removing pre-release information.
+*/}}
+{{- define "sentry.kubeVersion" -}}
+  {{- default .Capabilities.KubeVersion.Version (regexFind "v[0-9]+\\.[0-9]+\\.[0-9]+" .Capabilities.KubeVersion.Version) -}}
+{{- end -}}
+
+{{/*
+Return the appropriate apiVersion for ingress.
+*/}}
+{{- define "sentry.ingress.apiVersion" -}}
+  {{- if and (.Capabilities.APIVersions.Has "networking.k8s.io/v1") (semverCompare ">= 1.19.x" (include "sentry.kubeVersion" .)) -}}
+      {{- print "networking.k8s.io/v1" -}}
+  {{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" -}}
+    {{- print "networking.k8s.io/v1beta1" -}}
+  {{- else -}}
+    {{- print "extensions/v1beta1" -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Return if ingress is stable.
+*/}}
+{{- define "sentry.ingress.isStable" -}}
+  {{- eq (include "sentry.ingress.apiVersion" .) "networking.k8s.io/v1" -}}
+{{- end -}}
+
+{{/*
+Return the appropriate batch apiVersion for cronjobs.
+batch/v1beta1 will no longer be served in v1.25
+See more at https://kubernetes.io/docs/reference/using-api/deprecation-guide/#cronjob-v125
+*/}}
+{{- define "sentry.batch.apiVersion" -}}
+  {{- if and (.Capabilities.APIVersions.Has "batch/v1") (semverCompare ">= 1.21.x" (include "sentry.kubeVersion" .)) -}}
+      {{- print "batch/v1" -}}
+  {{- else if .Capabilities.APIVersions.Has "batch/v1beta1" -}}
+    {{- print "batch/v1beta1" -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Return if batch is stable.
+*/}}
+{{- define "sentry.batch.isStable" -}}
+  {{- eq (include "sentry.batch.apiVersion" .) "batch/v1" -}}
+{{- end -}}
+
+{{/*
+Return if ingress supports ingressClassName.
+*/}}
+{{- define "sentry.ingress.supportsIngressClassName" -}}
+  {{- or (eq (include "sentry.ingress.isStable" .) "true") (and (eq (include "sentry.ingress.apiVersion" .) "networking.k8s.io/v1beta1") (semverCompare ">= 1.18.x" (include "sentry.kubeVersion" .))) -}}
+{{- end -}}
+
+{{/*
+Return if ingress supports pathType.
+*/}}
+{{- define "sentry.ingress.supportsPathType" -}}
+  {{- or (eq (include "sentry.ingress.isStable" .) "true") (and (eq (include "sentry.ingress.apiVersion" .) "networking.k8s.io/v1beta1") (semverCompare ">= 1.18.x" (include "sentry.kubeVersion" .))) -}}
 {{- end -}}
 
 {{/*
@@ -155,7 +214,7 @@ Set postgres port
 */}}
 {{- define "sentry.postgresql.port" -}}
 {{- if .Values.postgresql.enabled -}}
-{{- default 5432 .Values.postgresql.service.port }}
+{{- default 5432 .Values.postgresql.primary.service.ports.postgresql }}
 {{- else -}}
 {{- required "A valid .Values.externalPostgresql.port is required" .Values.externalPostgresql.port -}}
 {{- end -}}
@@ -169,17 +228,6 @@ Set postgresql username
 {{- default "postgres" .Values.postgresql.postgresqlUsername }}
 {{- else -}}
 {{ required "A valid .Values.externalPostgresql.username is required" .Values.externalPostgresql.username }}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Set postgresql password
-*/}}
-{{- define "sentry.postgresql.password" -}}
-{{- if .Values.postgresql.enabled -}}
-{{- default "" .Values.postgresql.postgresqlPassword }}
-{{- else -}}
-{{ required "A valid .Values.externalPostgresql.password is required" .Values.externalPostgresql.password }}
 {{- end -}}
 {{- end -}}
 
@@ -294,13 +342,6 @@ default
 {{- end -}}
 
 {{/*
-Set ClickHouse Authorization
-*/}}
-{{- define "sentry.clickhouse.auth" -}}
---user {{ include "sentry.clickhouse.username" . }} --password {{ include "sentry.clickhouse.password" .| quote }}
-{{- end -}}
-
-{{/*
 Set ClickHouse User
 */}}
 {{- define "sentry.clickhouse.username" -}}
@@ -346,7 +387,7 @@ Set Kafka Confluent host
 {{- define "sentry.kafka.host" -}}
 {{- if .Values.kafka.enabled -}}
 {{- template "sentry.kafka.fullname" . -}}
-{{- else -}}
+{{- else if and (.Values.externalKafka) (not (kindIs "slice" .Values.externalKafka)) -}}
 {{ required "A valid .Values.externalKafka.host is required" .Values.externalKafka.host }}
 {{- end -}}
 {{- end -}}
@@ -355,12 +396,26 @@ Set Kafka Confluent host
 Set Kafka Confluent port
 */}}
 {{- define "sentry.kafka.port" -}}
-{{- if and (.Values.kafka.enabled) (.Values.kafka.service.port) -}}
-{{- .Values.kafka.service.port }}
-{{- else -}}
+{{- if and (.Values.kafka.enabled) (.Values.kafka.service.ports.client) -}}
+{{- .Values.kafka.service.ports.client }}
+{{- else if and (.Values.externalKafka) (not (kindIs "slice" .Values.externalKafka)) -}}
 {{ required "A valid .Values.externalKafka.port is required" .Values.externalKafka.port }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Set Kafka bootstrap servers string
+*/}}
+{{- define "sentry.kafka.bootstrap_servers_string" -}}
+{{- if or (.Values.kafka.enabled) (not (kindIs "slice" .Values.externalKafka)) -}}
+{{ printf "%s:%s" (include "sentry.kafka.host" .) (include "sentry.kafka.port" .) }}
+{{- else -}}
+{{- range $index, $elem := .Values.externalKafka -}}
+{{- if $index -}},{{- end -}}{{ printf "%s:%s" $elem.host (toString $elem.port) }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 
 {{/*
 Set RabbitMQ host
@@ -380,5 +435,109 @@ Common Snuba environment variables
 - name: SNUBA_SETTINGS
   value: /etc/snuba/settings.py
 - name: DEFAULT_BROKERS
-  value: {{ printf "%s:%s" (include "sentry.kafka.host" .) (include "sentry.kafka.port" .) | quote }}
+  value: {{ include "sentry.kafka.bootstrap_servers_string" . | quote }}
+{{- if .Values.externalClickhouse.existingSecret }}
+- name: CLICKHOUSE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.externalClickhouse.existingSecret }}
+      key: {{ default "clickhouse-password" .Values.externalClickhouse.existingSecretKey }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Common Sentry environment variables
+*/}}
+{{- define "sentry.env" -}}
+- name: SNUBA
+  value: http://{{ template "sentry.fullname" . }}-snuba:{{ template "snuba.port" . }}
+{{- if .Values.sentry.existingSecret }}
+- name: SENTRY_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.sentry.existingSecret }}
+      key: {{ default "key" .Values.sentry.existingSecretKey }}
+{{- else }}
+- name: SENTRY_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ template "sentry.fullname" . }}-sentry-secret
+      key: "key"
+{{- end }}
+{{- if .Values.postgresql.enabled }}
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ default (include "sentry.postgresql.fullname" .) .Values.postgresql.existingSecret }}
+      key: {{ default "postgres-password" .Values.postgresql.existingSecretKey }}
+{{- else if .Values.externalPostgresql.password }}
+- name: POSTGRES_PASSWORD
+  value: {{ .Values.externalPostgresql.password | quote }}
+{{- else if .Values.externalPostgresql.existingSecret }}
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.externalPostgresql.existingSecret }}
+      key: {{ default "postgresql-password" .Values.externalPostgresql.existingSecretKey }}
+{{- end }}
+{{- if and (eq .Values.filestore.backend "gcs") .Values.filestore.gcs.secretName }}
+- name: GOOGLE_APPLICATION_CREDENTIALS
+  value: /var/run/secrets/google/{{ .Values.filestore.gcs.credentialsFile }}
+{{- end }}
+{{- if .Values.mail.password }}
+- name: SENTRY_EMAIL_PASSWORD
+  value: {{ .Values.mail.password | quote }}
+{{- else if .Values.mail.existingSecret }}
+- name: SENTRY_EMAIL_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.mail.existingSecret }}
+      key: {{ default "mail-password" .Values.mail.existingSecretKey }}
+{{- end }}
+{{- if .Values.slack.existingSecret }}
+- name: SLACK_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.slack.existingSecret }}
+      key: "client-id"
+- name: SLACK_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.slack.existingSecret }}
+      key: "client-secret"
+- name: SLACK_SIGNING_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.slack.existingSecret }}
+      key: "signing-secret"
+{{- end }}
+{{- if and .Values.github.existingSecret }}
+- name: GITHUB_APP_PRIVATE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "private-key" .Values.github.existingSecretPrivateKeyKey }}
+- name: GITHUB_APP_WEBHOOK_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "webhook-secret" .Values.github.existingSecretWebhookSecretKey }}
+- name: GITHUB_APP_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "client-id" .Values.github.existingSecretClientIdKey }}
+- name: GITHUB_APP_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.github.existingSecret }}
+      key: {{ default "client-secret" .Values.github.existingSecretClientSecretKey }}
+{{- end }}
+{{- if .Values.openai.existingSecret }}
+- name: OPENAI_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.openai.existingSecret }}
+      key: {{ default "api-token" .Values.openai.existingSecretKey }}
+{{- end }}
 {{- end -}}
