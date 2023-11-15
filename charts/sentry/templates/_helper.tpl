@@ -276,6 +276,17 @@ Set redis port
 {{- end -}}
 
 {{/*
+Set redis protocol (rediss for TLS, redis for plaintext)
+*/}}
+{{- define "sentry.redis.protocol" -}}
+{{- if .Values.redis.enabled | ternary .Values.redis.tls.enabled .Values.externalRedis.tls -}}
+rediss
+{{- else -}}
+redis
+{{- end -}}
+{{- end -}}
+
+{{/*
 Set redis password
 */}}
 {{- define "sentry.redis.password" -}}
