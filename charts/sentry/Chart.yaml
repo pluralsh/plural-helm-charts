@@ -39,4 +39,4 @@ maintainers:
 - name: sentry-kubernetes
 name: sentry
 type: application
-version: 19.4.0-plural1
+version: 19.4.0-plural2
