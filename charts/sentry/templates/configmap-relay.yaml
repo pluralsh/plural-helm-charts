@@ -34,9 +34,9 @@ data:
           value: 50000000  # 50MB or bust
 
       {{- if $redisPass }}
-      redis: {{ $redisProtocol }}://:{{ $redisPass }}@{{ $redisHost }}:{{ $redisPort }}"
+      redis: "{{ $redisProtocol }}://:{{ $redisPass }}@{{ $redisHost }}:{{ $redisPort }}"
       {{- else }}
-      redis: {{ $redisProtocol }}://{{ $redisHost }}:{{ $redisPort }}"
+      redis: "{{ $redisProtocol }}://{{ $redisHost }}:{{ $redisPort }}"
       {{- end }}
       topics:
         metrics_transactions: ingest-performance-metrics
