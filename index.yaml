@@ -1716,6 +1716,52 @@ entries:
     version: 3.1.2
   sentry:
   - apiVersion: v2
+    appVersion: 23.6.1
+    created: "2023-11-16T14:51:55.619305886Z"
+    dependencies:
+    - condition: sourcemaps.enabled
+      name: memcached
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 6.5.2
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 17.11.3
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+      version: 16.3.2
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: https://sentry-kubernetes.github.io/charts
+      version: 3.3.0
+    - condition: zookeeper.enabled
+      name: zookeeper
+      repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+      version: 9.0.0
+    - alias: rabbitmq
+      condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 11.15.3
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 12.5.1
+    - condition: nginx.enabled
+      name: nginx
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 14.2.2
+    description: A Helm chart for Kubernetes
+    digest: 810f6f62f85382540debd8ca64b177764dfa558d3b18dc4ed756632184f1206f
+    maintainers:
+    - name: sentry-kubernetes
+    name: sentry
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/sentry-19.4.0-plural1/sentry-19.4.0-plural1.tgz
+    version: 19.4.0-plural1
+  - apiVersion: v2
     appVersion: 21.5.1
     created: "2022-11-30T16:31:41.965618785Z"
     dependencies:
@@ -2134,4 +2180,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2023-09-14T13:37:50.022932351Z"
+generated: "2023-11-16T14:51:55.619396736Z"
