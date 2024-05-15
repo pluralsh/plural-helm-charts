@@ -2978,170 +2978,565 @@ relay:
   volumes: []
 revisionHistoryLimit: 10
 sentry:
-  billingMetricsConsumer:
-    affinity: {}
-    autoscaling:
-      enabled: false
-      maxReplicas: 3
-      minReplicas: 1
-      targetCPUUtilizationPercentage: 50
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
-    replicas: 1
-    resources: {}
-    securityContext: {}
-    sidecars: []
-    volumes: []
-  cleanup:
-    activeDeadlineSeconds: 100
-    concurrency: 1
-    concurrencyPolicy: Allow
-    days: 90
+  workerTransactions:
     enabled: true
-    failedJobsHistoryLimit: 5
-    schedule: 0 0 * * *
-    serviceAccount: {}
-    sidecars: []
-    successfulJobsHistoryLimit: 5
-    volumes: []
-  cron:
-    affinity: {}
-    env: []
-    nodeSelector: {}
+    queues: "events.save_event_transaction,post_process_transactions"
     replicas: 1
+    # concurrency: 4
+    env: []
     resources: {}
+    affinity: {}
+    nodeSelector: {}
+    # tolerations: []
+    # podLabels: []
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 50
+    livenessProbe:
+      enabled: false
+      periodSeconds: 60
+      timeoutSeconds: 10
+      failureThreshold: 3
     sidecars: []
     volumes: []
-  features:
-    orgSubdomains: false
-    vstsLimitedScopes: true
+    volumeMounts: []
+
   ingestConsumer:
+    enabled: true
+    replicas: 1
+    # concurrency: 4
+    env: []
+    resources: {}
     affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # maxBatchSize: ""
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
     autoscaling:
       enabled: false
-      maxReplicas: 3
       minReplicas: 1
+      maxReplicas: 3
       targetCPUUtilizationPercentage: 50
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
-    replicas: 1
-    resources: {}
-    securityContext: {}
     sidecars: []
     volumes: []
-  ingestMetricsConsumerPerf:
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+    # noStrictOffsetReset: false
+
+  ingestConsumerAttachments:
+    enabled: true
+    replicas: 1
+    # concurrency: 4
+    env: []
+    resources: {}
     affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # maxBatchSize: ""
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
     autoscaling:
       enabled: false
-      maxReplicas: 3
       minReplicas: 1
+      maxReplicas: 3
       targetCPUUtilizationPercentage: 50
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
-    replicas: 1
-    resources: {}
-    securityContext: {}
     sidecars: []
     volumes: []
-  ingestMetricsConsumerRh:
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+    # noStrictOffsetReset: false
+
+  ingestConsumerEvents:
+    enabled: true
+    replicas: 1
+    # concurrency: 4
+    env: []
+    resources: {}
     affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # maxBatchSize: ""
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
     autoscaling:
       enabled: false
-      maxReplicas: 3
       minReplicas: 1
+      maxReplicas: 3
       targetCPUUtilizationPercentage: 50
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
-    replicas: 1
-    resources: {}
-    securityContext: {}
     sidecars: []
     volumes: []
-  ingestMonitors:
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+    # noStrictOffsetReset: false
+
+  ingestConsumerTransactions:
+    enabled: true
+    replicas: 1
+    # concurrency: 4
+    env: []
+    resources: {}
     affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # maxBatchSize: ""
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
     autoscaling:
       enabled: false
-      maxReplicas: 3
       minReplicas: 1
+      maxReplicas: 3
       targetCPUUtilizationPercentage: 50
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
-    replicas: 1
-    resources: {}
-    securityContext: {}
     sidecars: []
     volumes: []
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+    # noStrictOffsetReset: false
+
   ingestReplayRecordings:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
     affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
     autoscaling:
       enabled: false
-      maxReplicas: 3
       minReplicas: 1
+      maxReplicas: 3
       targetCPUUtilizationPercentage: 50
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
-    replicas: 1
-    resources: {}
-    securityContext: {}
     sidecars: []
     volumes: []
-  postProcessForwardErrors:
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+  ingestProfiles:
+    replicas: 1
+    env: []
+    resources: {}
     affinity: {}
-    containerSecurityContext: {}
-    env: []
     nodeSelector: {}
-    replicas: 1
-    resources: {}
     securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
     sidecars: []
     volumes: []
-  postProcessForwardTransactions:
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+  ingestOccurrences:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
     affinity: {}
-    containerSecurityContext: {}
-    env: []
     nodeSelector: {}
-    replicas: 1
-    resources: {}
     securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
     sidecars: []
     volumes: []
-  singleOrganization: true
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+  ingestMonitors:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
+    sidecars: []
+    volumes: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+  billingMetricsConsumer:
+    enabled: true
+    replicas: 1
+    # concurrency: 4
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # maxBatchSize: ""
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
+    sidecars: []
+    volumes: []
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+  genericMetricsConsumer:
+    enabled: true
+    replicas: 1
+    # concurrency: 4
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # maxBatchSize: ""
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
+    sidecars: []
+    volumes: []
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+  metricsConsumer:
+    enabled: true
+    replicas: 1
+    # concurrency: 4
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    # maxBatchSize: ""
+
+    # it's better to use prometheus adapter and scale based on
+    # the size of the rabbitmq queue
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 50
+    sidecars: []
+    volumes: []
+
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+
+  cron:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    # tolerations: []
+    # podLabels: []
+    sidecars: []
+    volumes: []
+    # volumeMounts: []
+    ## Log level can be any of: DEBUG, INFO, WARNING, ERROR, CRITICAL, FATAL
+    # logLevel: info
+
   subscriptionConsumerEvents:
-    affinity: {}
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
+    enabled: true
     replicas: 1
+    env: []
     resources: {}
+    affinity: {}
+    nodeSelector: {}
     securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
     sidecars: []
     volumes: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # noStrictOffsetReset: false
+    # volumeMounts: []
+
   subscriptionConsumerSessions:
-    affinity: {}
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
     replicas: 1
+    env: []
     resources: {}
+    affinity: {}
+    nodeSelector: {}
     securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
     sidecars: []
     volumes: []
+    # noStrictOffsetReset: false
+    # volumeMounts: []
+
   subscriptionConsumerTransactions:
-    affinity: {}
-    containerSecurityContext: {}
-    env: []
-    nodeSelector: {}
+    enabled: true
     replicas: 1
+    env: []
     resources: {}
+    affinity: {}
+    nodeSelector: {}
     securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
     sidecars: []
     volumes: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # noStrictOffsetReset: false
+    # volumeMounts: []
+
+
+  postProcessForwardErrors:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    sidecars: []
+    volumes: []
+    # volumeMounts: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+
+  postProcessForwardTransactions:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    sidecars: []
+    volumes: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumeMounts: []
+    # noStrictOffsetReset: false
+  postProcessForwardIssuePlatform:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    sidecars: []
+    volumes: []
+    # volumeMounts: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+
+  subscriptionConsumerGenericMetrics:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    sidecars: []
+    volumes: []
+    # volumeMounts: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+
+  subscriptionConsumerMetrics:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    sidecars: []
+    volumes: []
+    # volumeMounts: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+
+  cleanup:
+    successfulJobsHistoryLimit: 5
+    failedJobsHistoryLimit: 5
+    activeDeadlineSeconds: 100
+    concurrencyPolicy: Allow
+    concurrency: 1
+    enabled: true
+    schedule: "0 0 * * *"
+    days: 90
+    # securityContext: {}
+    # containerSecurityContext: {}
+    sidecars: []
+    volumes: []
+    # volumeMounts: []
+    serviceAccount: {}
+
   web:
     affinity: {}
     autoscaling:
@@ -3185,6 +3580,13 @@ sentry:
     sidecars: []
     volumeMounts: []
     volumes: []
+  features:
+    orgSubdomains: false
+    vstsLimitedScopes: true
+    enableProfiling: false
+    enableSessionReplay: true
+    enableFeedback: false
+    enableSpan: false
 service:
   annotations: {}
   externalPort: 9000
@@ -3308,6 +3710,260 @@ snuba:
     replicas: 1
     resources: {}
     securityContext: {}
+  genericMetricsCountersConsumer:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumes: []
+    # volumeMounts: []
+  metricsConsumer:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumes: []
+    # volumeMounts: []
+  genericMetricsDistributionConsumer:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumes: []
+    # volumeMounts: []
+
+  genericMetricsSetsConsumer:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumes: []
+    # volumeMounts: []
+
+  subscriptionConsumerMetrics:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # volumes: []
+    # volumeMounts: []
+
+  profilingProfilesConsumer:
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # noStrictOffsetReset: false
+    # maxBatchSize: ""
+    # processes: ""
+    # inputBlockSize: ""
+    # outputBlockSize: ""
+    # maxBatchTimeMs: ""
+    # queuedMaxMessagesKbytes: ""
+    # queuedMinMessages: ""
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+    # volumes:
+    #   - name: dshm
+    #     emptyDir:
+    #       medium: Memory
+
+  profilingFunctionsConsumer:
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # noStrictOffsetReset: false
+    # maxBatchSize: ""
+    # processes: ""
+    # inputBlockSize: ""
+    # outputBlockSize: ""
+    # maxBatchTimeMs: ""
+    # queuedMaxMessagesKbytes: ""
+    # queuedMinMessages: ""
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+    # volumes:
+    #   - name: dshm
+    #     emptyDir:
+    #       medium: Memory
+  issueOccurrenceConsumer:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # noStrictOffsetReset: false
+    # maxBatchSize: ""
+    # processes: ""
+    # inputBlockSize: ""
+    # outputBlockSize: ""
+    # maxBatchTimeMs: ""
+    # queuedMaxMessagesKbytes: ""
+    # queuedMinMessages: ""
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+    # volumes:
+    #   - name: dshm
+    #     emptyDir:
+    #       medium: Memory
+
+  spansConsumer:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # noStrictOffsetReset: false
+    # maxBatchSize: ""
+    # processes: ""
+    # inputBlockSize: ""
+    # outputBlockSize: ""
+    # maxBatchTimeMs: ""
+    # queuedMaxMessagesKbytes: ""
+    # queuedMinMessages: ""
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+    # volumes:
+    #   - name: dshm
+    #     emptyDir:
+    #       medium: Memory
+
+  groupAttributesConsumer:
+    enabled: true
+    replicas: 1
+    env: []
+    resources: {}
+    affinity: {}
+    nodeSelector: {}
+    securityContext: {}
+    containerSecurityContext: {}
+    # tolerations: []
+    # podLabels: []
+    autoOffsetReset: "earliest"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 320
+    # noStrictOffsetReset: false
+    # maxBatchSize: ""
+    # processes: ""
+    # inputBlockSize: ""
+    # outputBlockSize: ""
+    # maxBatchTimeMs: ""
+    # queuedMaxMessagesKbytes: ""
+    # queuedMinMessages: ""
+
+    # volumeMounts:
+    #   - mountPath: /dev/shm
+    #     name: dshm
+    # volumes:
+    #   - name: dshm
+    #     emptyDir:
+    #       medium: Memory
 sourcemaps:
   enabled: false
 symbolicator:
