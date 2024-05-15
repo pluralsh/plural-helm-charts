@@ -1,4 +1,5 @@
 {{- $redisPass := include "sentry.redis.password" . -}}
+{{- $redisTls := eq "rediss" (include "sentry.redis.protocol" .) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -18,6 +19,8 @@ data:
 
     DEBUG = env("DEBUG", "0").lower() in ("1", "true")
 
+
+    # Clickhouse Options
     CLUSTERS = [
       {
         "host": env("CLICKHOUSE_HOST", {{ include "sentry.clickhouse.host" . | quote }}),
@@ -72,5 +75,13 @@ data:
     REDIS_PASSWORD = {{ $redisPass | quote }}
     {{- end }}
     REDIS_DB = int(env("REDIS_DB", 1))
+    {{- if $redisTls }}
+    REDIS_SSL = True
+    {{- end }}
+
+{{- if .Values.metrics.enabled }}
+    DOGSTATSD_HOST = "{{ template "sentry.fullname" . }}-metrics"
+    DOGSTATSD_PORT = 9125
+{{- end }}
 
 {{ .Values.config.snubaSettingsPy | indent 4 }}

@@ -1,6 +1,8 @@
 {{- $redisHost := include "sentry.redis.host" . -}}
 {{- $redisPort := include "sentry.redis.port" . -}}
 {{- $redisPass := include "sentry.redis.password" . -}}
+{{- $redisProtocol := include "sentry.redis.protocol" . -}}
+{{- $redisTls := eq "rediss" $redisProtocol -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,7 +17,6 @@ data:
     {{- if .Values.system.adminEmail }}
     system.admin-email: {{ .Values.system.adminEmail | quote }}
     {{- end }}
-    system.secret-key: {{ .Values.system.secretKey | default (randAlphaNum 50) | quote }}
     {{- if .Values.system.url }}
     system.url-prefix: {{ .Values.system.url | quote }}
     {{- end }}
@@ -32,25 +33,26 @@ data:
     ##########
     # Github #
     ##########
-    {{- if .Values.github.appId }}
-    github-app.id: {{ .Values.github.appId }}
-    {{ end }}
-    {{- if .Values.github.appName }}
-    github-app.name: {{ .Values.github.appName | quote }}
-    {{ end }}
-    {{- if .Values.github.privateKey }}
-    github-app.private-key: |-
-      {{ .Values.github.privateKey | nindent 8 }}"
-    {{ end }}
-    {{- if .Values.github.webhookSecret }}
-    github-app.webhook-secret: {{ .Values.github.webhookSecret | quote }}
-    {{ end }}
-    {{- if .Values.github.clientId }}
-    github-app.client-id: {{ .Values.github.clientId | quote }}
-    {{ end }}
-    {{- if .Values.github.clientSecret }}
-    github-app.client-secret: {{ .Values.github.clientSecret | quote }}
-    {{ end }}
+    {{- with .Values.github.appId }}
+    github-app.id: {{ . }}
+    {{- end }}
+    {{- with .Values.github.appName }}
+    github-app.name: {{ . | quote }}
+    {{- end }}
+    {{- if not .Values.github.existingSecret }}
+      {{- with .Values.github.privateKey }}
+    github-app.private-key: {{- . | toYaml | indent 4 }}
+      {{- end }}
+      {{- with .Values.github.webhookSecret }}
+    github-app.webhook-secret: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.github.clientId }}
+    github-app.client-id: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.github.clientSecret }}
+    github-app.client-secret: {{ . | quote }}
+      {{- end }}
+    {{- end }}
 
     ##########
     # Google #
@@ -63,7 +65,7 @@ data:
     #########
     # Slack #
     #########
-    {{- if .Values.slack.clientId }}
+    {{- if and (.Values.slack.clientId) (.Values.slack.clientSecret) (.Values.slack.signingSecret) (not .Values.slack.existingSecret) }}
     slack.client-id: {{ .Values.slack.clientId | quote }}
     slack.client-secret: {{ .Values.slack.clientSecret | quote }}
     slack.signing-secret: {{ .Values.slack.signingSecret | quote }}
@@ -80,6 +82,9 @@ data:
             port: {{ $redisPort }}
             {{- if $redisPass }}
             password: {{ $redisPass | quote }}
+            {{- end }}
+            {{- if $redisTls }}
+            ssl: true
             {{- end }}
 
     ################
@@ -119,6 +124,13 @@ data:
       {{- if .Values.filestore.s3.default_acl }}
       default_acl: {{ .Values.filestore.s3.default_acl | quote }}
       {{- end }}
+      #add comfig params for s3
+      {{- if .Values.filestore.s3.addressing_style }}
+      addressing_style: {{ .Values.filestore.s3.addressing_style | quote }}
+      {{- end }}
+      {{- if .Values.filestore.s3.location }}
+      location: {{ .Values.filestore.s3.location | quote }}
+      {{- end }}
     {{ end }}
 
     {{- if .Values.config.configYml }}
@@ -128,12 +140,36 @@ data:
     from sentry.conf.server import *  # NOQA
     from distutils.util import strtobool
 
+    BYTE_MULTIPLIER = 1024
+    UNITS = ("K", "M", "G")
+    def unit_text_to_bytes(text):
+        unit = text[-1].upper()
+        power = UNITS.index(unit) + 1
+        return float(text[:-1])*(BYTE_MULTIPLIER**power)
+
+    {{- if .Values.sourcemaps.enabled }}
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+            "LOCATION": [
+                "{{ template "sentry.fullname" . }}-memcached:11211"
+            ],
+            "TIMEOUT": 3600,
+            "OPTIONS": {
+                "server_max_value_length": unit_text_to_bytes(env("SENTRY_MAX_EXTERNAL_SOURCEMAP_SIZE", "1M")),
+            },
+        }
+    }
+    import memcache
+    memcache.SERVER_MAX_VALUE_LENGTH = {{ .Values.memcached.maxItemSize }}
+    {{- end }}
+
     DATABASES = {
         "default": {
             "ENGINE": "sentry.db.postgres",
             "NAME": {{ include "sentry.postgresql.database" . | quote }},
             "USER": {{ include "sentry.postgresql.username" . | quote }},
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
             "HOST": {{ include "sentry.postgresql.host" . | quote }},
             "PORT": {{ template "sentry.postgresql.port" . }},
             {{- if .Values.externalPostgresql.sslMode }}
@@ -144,6 +180,10 @@ data:
         }
     }
 
+    {{- if .Values.geodata.path }}
+    GEOIP_PATH_MMDB = {{ .Values.geodata.path | quote }}
+    {{- end }}
+
     # You should not change this setting after your database has been created
     # unless you have altered all schemas first
     SENTRY_USE_BIG_INTS = True
@@ -152,11 +192,18 @@ data:
     # General #
     ###########
 
+
+    secret_key = env('SENTRY_SECRET_KEY')
+    if not secret_key:
+      raise Exception('Error: SENTRY_SECRET_KEY is undefined')
+
+    SENTRY_OPTIONS['system.secret-key'] = secret_key
+
     # Instruct Sentry that this install intends to be run by a single organization
     # and thus various UI optimizations should be enabled.
     SENTRY_SINGLE_ORGANIZATION = {{ if .Values.sentry.singleOrganization }}True{{ else }}False{{ end }}
 
-    SENTRY_OPTIONS["system.event-retention-days"] = int(env('SENTRY_EVENT_RETENTION_DAYS') or 90)
+    SENTRY_OPTIONS["system.event-retention-days"] = int(env('SENTRY_EVENT_RETENTION_DAYS') or {{ .Values.sentry.cleanup.days | quote }})
 
     #########
     # Queue #
@@ -169,9 +216,9 @@ data:
     {{- if or (.Values.rabbitmq.enabled) (.Values.rabbitmq.host) }}
     BROKER_URL = os.environ.get("BROKER_URL", "amqp://{{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }}@{{ template "sentry.rabbitmq.host" . }}:5672/{{ .Values.rabbitmq.vhost }}")
     {{- else if $redisPass }}
-    BROKER_URL = os.environ.get("BROKER_URL", "redis://:{{ $redisPass }}@{{ $redisHost }}:{{ $redisPort }}/0")
+    BROKER_URL = os.environ.get("BROKER_URL", "{{ $redisProtocol }}://:{{ $redisPass }}@{{ $redisHost }}:{{ $redisPort }}/0")
     {{- else }}
-    BROKER_URL = os.environ.get("BROKER_URL", "redis://{{ $redisHost }}:{{ $redisPort }}/0")
+    BROKER_URL = os.environ.get("BROKER_URL", "{{ $redisProtocol }}://{{ $redisHost }}:{{ $redisPort }}/0")
     {{- end }}
 
     #########
@@ -193,7 +240,7 @@ data:
     SENTRY_CACHE = "sentry.cache.redis.RedisCache"
 
     DEFAULT_KAFKA_OPTIONS = {
-        "bootstrap.servers": {{ printf "%s:%s" (include "sentry.kafka.host" .) (include "sentry.kafka.port" .) | quote }},
+        "bootstrap.servers": {{ (include "sentry.kafka.bootstrap_servers_string" .) | quote }},
         "message.max.bytes": 50000000,
         "socket.timeout.ms": 1000,
     }
@@ -269,9 +316,28 @@ data:
         "protocol": "uwsgi",
         # This is needed to prevent https://git.io/fj7Lw
         "uwsgi-socket": None,
-        "http-keepalive": True,
+        # Keep this between 15s-75s as that's what Relay supports
+        "http-keepalive": {{ .Values.config.web.httpKeepalive }},
+        "http-chunked-input": True,
+        # the number of web workers
+        'workers': 3,
+        # Turn off memory reporting
         "memory-report": False,
-        # 'workers': 3,  # the number of web workers
+        # Some stuff so uwsgi will cycle workers sensibly
+        'max-requests': 100000,
+        'max-requests-delta': 500,
+        'max-worker-lifetime': 86400,
+        # Duplicate options from sentry default just so we don't get
+        # bit by sentry changing a default value that we depend on.
+        'thunder-lock': True,
+        'log-x-forwarded-for': False,
+        'buffer-size': 32768,
+        'limit-post': 209715200,
+        'disable-logging': True,
+        'reload-on-rss': 600,
+        'ignore-sigpipe': True,
+        'ignore-write-errors': True,
+        'disable-write-exception': True,
     }
 
     ###########
@@ -421,6 +487,7 @@ data:
                 "organizations:dashboards-rh-widget",
                 "organizations:metrics-extraction",
                 "organizations:transaction-metrics-extraction",
+                "organizations:session-replay",
 
                 "projects:alert-filters",
                 "projects:custom-inbound-filters",
@@ -435,7 +502,6 @@ data:
                 "projects:similarity-indexing",
                 "projects:similarity-view-v2",
                 "projects:similarity-indexing-v2",
-                "projects:reprocessing-v2",
 
                 "projects:plugins",
             )
@@ -447,15 +513,16 @@ data:
     #######################
     SENTRY_OPTIONS['mail.backend'] = os.getenv("SENTRY_EMAIL_BACKEND", {{ .Values.mail.backend | quote }})
     SENTRY_OPTIONS['mail.use-tls'] = bool(strtobool(os.getenv("SENTRY_EMAIL_USE_TLS", {{ .Values.mail.useTls | quote }})))
+    SENTRY_OPTIONS['mail.use-ssl'] = bool(strtobool(os.getenv("SENTRY_EMAIL_USE_SSL", {{ .Values.mail.useSsl | quote }})))
     SENTRY_OPTIONS['mail.username'] = os.getenv("SENTRY_EMAIL_USERNAME", {{ .Values.mail.username | quote }})
-    SENTRY_OPTIONS['mail.password'] = os.getenv("SENTRY_EMAIL_PASSWORD", {{ .Values.mail.password | quote }})
+    SENTRY_OPTIONS['mail.password'] = os.getenv("SENTRY_EMAIL_PASSWORD", "")
     SENTRY_OPTIONS['mail.port'] = int(os.getenv("SENTRY_EMAIL_PORT", {{ .Values.mail.port | quote }}))
     SENTRY_OPTIONS['mail.host'] = os.getenv("SENTRY_EMAIL_HOST", {{ .Values.mail.host | quote }})
     SENTRY_OPTIONS['mail.from'] = os.getenv("SENTRY_EMAIL_FROM", {{ .Values.mail.from | quote }})
 
     #########################
     # Bitbucket Integration #
-    ########################
+    #########################
 
     # BITBUCKET_CONSUMER_KEY = 'YOUR_BITBUCKET_CONSUMER_KEY'
     # BITBUCKET_CONSUMER_SECRET = 'YOUR_BITBUCKET_CONSUMER_SECRET'
@@ -466,6 +533,14 @@ data:
     SENTRY_RELAY_WHITELIST_PK = []
     SENTRY_RELAY_OPEN_REGISTRATION = True
 
+    #######################
+    # OpenAi Suggestions #
+    #######################
+    
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+    if OPENAI_API_KEY:
+      SENTRY_FEATURES["organizations:open-ai-suggestion"] = True
+
 {{- if .Values.metrics.enabled }}
     SENTRY_METRICS_BACKEND = 'sentry.metrics.statsd.StatsdMetricsBackend'
     SENTRY_METRICS_OPTIONS = {
@@ -474,4 +549,22 @@ data:
     }
 {{- end }}
 
+{{- if .Values.slack.existingSecret }}
+    #########
+    # SLACK #
+    #########
+    SENTRY_OPTIONS['slack.client-id'] = os.environ.get("SLACK_CLIENT_ID")
+    SENTRY_OPTIONS['slack.client-secret'] = os.environ.get("SLACK_CLIENT_SECRET")
+    SENTRY_OPTIONS['slack.signing-secret'] = os.environ.get("SLACK_SIGNING_SECRET")
+{{- end }}
+
+{{- if .Values.github.existingSecret }}
+    ##########
+    # Github #
+    ##########
+    SENTRY_OPTIONS['github-app.private-key'] = os.environ.get("GITHUB_APP_PRIVATE_KEY")
+    SENTRY_OPTIONS['github-app.webhook-secret'] = os.environ.get("GITHUB_APP_WEBHOOK_SECRET")
+    SENTRY_OPTIONS['github-app.client-id'] = os.environ.get("GITHUB_APP_CLIENT_ID")
+    SENTRY_OPTIONS['github-app.client-secret'] = os.environ.get("GITHUB_APP_CLIENT_SECRET")
+{{- end }}
 {{ .Values.config.sentryConfPy | indent 4 }}

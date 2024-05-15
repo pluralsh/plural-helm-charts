@@ -69,9 +69,21 @@ spec:
           args:
             - "credentials"
             - "generate"
+{{- if .Values.relay.init.additionalArgs }}
+{{ toYaml .Values.relay.init.additionalArgs | indent 12 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.relay.init.resources | indent 12 }}
+{{- if .Values.relay.containerSecurityContext }}
+          securityContext:
+{{ toYaml .Values.relay.containerSecurityContext | indent 12 }}
+{{- end }}
           env:
             - name: RELAY_PORT
               value: '{{ template "relay.port" }}'
+{{- if .Values.relay.init.env }}
+{{ toYaml .Values.relay.init.env | indent 12 }}
+{{- end }}
           volumeMounts:
             - name: credentials
               mountPath: /work/.relay
@@ -79,8 +91,22 @@ spec:
               mountPath: /work/.relay/config.yml
               subPath: config.yml
               readOnly: true
+{{- if .Values.relay.init.volumeMounts }}
+{{ toYaml .Values.relay.volumeMounts | indent 12 }}
+{{- end }}
+      {{- if .Values.dnsPolicy }}
+      dnsPolicy: {{ .Values.dnsPolicy | quote }}
+      {{- end }}
+      {{- if .Values.dnsConfig }}
+      dnsConfig:
+{{ toYaml .Values.dnsConfig | indent 8 }}
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}-relay
+{{- if .Values.relay.args }}
+        args:
+{{ toYaml .Values.relay.args | indent 10 }}
+{{- end }}
         image: "{{ template "relay.image" . }}"
         imagePullPolicy: {{ default "IfNotPresent" .Values.images.sentry.pullPolicy }}
         ports:
@@ -98,31 +124,45 @@ spec:
             mountPath: /work/.relay/config.yml
             subPath: config.yml
             readOnly: true
+          {{- if .Values.geodata.volumeName }}
+          - name: {{ .Values.geodata.volumeName }}
+            mountPath: {{ .Values.geodata.mountPath }}
+          {{- end }}
+{{- if .Values.relay.volumeMounts }}
+{{ toYaml .Values.relay.volumeMounts | indent 10 }}
+{{- end }}
         livenessProbe:
-          failureThreshold: 5
+          failureThreshold: {{ .Values.relay.probeFailureThreshold }}
           httpGet:
-            path: /api/relay/healthcheck/ready/
+            path: {{ template "relay.healthCheck.livenessRequestPath" }}
             port: {{ template "relay.port" }}
             scheme: HTTP
           initialDelaySeconds: {{ .Values.relay.probeInitialDelaySeconds }}
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 2
+          periodSeconds: {{ .Values.relay.probePeriodSeconds }}
+          successThreshold: {{ .Values.relay.probeSuccessThreshold }}
+          timeoutSeconds: {{ .Values.relay.probeTimeoutSeconds }}
         readinessProbe:
-          failureThreshold: 10
+          failureThreshold: {{ .Values.relay.probeFailureThreshold }}
           httpGet:
-            path: /api/relay/healthcheck/ready/
+            path: {{ template "relay.healthCheck.readinessRequestPath" }}
             port: {{ template "relay.port" }}
             scheme: HTTP
           initialDelaySeconds: {{ .Values.relay.probeInitialDelaySeconds }}
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 2
+          periodSeconds: {{ .Values.relay.probePeriodSeconds }}
+          successThreshold: {{ .Values.relay.probeSuccessThreshold }}
+          timeoutSeconds: {{ .Values.relay.probeTimeoutSeconds }}
         resources:
 {{ toYaml .Values.relay.resources | indent 12 }}
+{{- if .Values.relay.containerSecurityContext }}
+        securityContext:
+{{ toYaml .Values.relay.containerSecurityContext | indent 12 }}
+{{- end }}
 {{- if .Values.relay.sidecars }}
 {{ toYaml .Values.relay.sidecars | indent 6 }}
 {{- end }}
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}-relay
+      {{- end }}
       volumes:
       - name: config
         configMap:
