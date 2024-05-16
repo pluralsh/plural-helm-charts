@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 23.6.1
+appVersion: 24.2.0
 dependencies:
 - condition: sourcemaps.enabled
   name: memcached
@@ -39,4 +39,4 @@ maintainers:
 - name: sentry-kubernetes
 name: sentry
 type: application
-version: 19.4.0-plural2
+version: 19.4.1-plural

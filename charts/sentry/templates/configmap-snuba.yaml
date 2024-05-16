@@ -19,6 +19,7 @@ data:
 
     DEBUG = env("DEBUG", "0").lower() in ("1", "true")
 
+
     # Clickhouse Options
     CLUSTERS = [
       {
@@ -34,6 +35,7 @@ data:
             "events",
             "events_ro",
             "metrics",
+            "metrics_summaries",
             "migrations",
             "outcomes",
             "querylog",
@@ -47,6 +49,8 @@ data:
             "search_issues",
             "generic_metrics_counters",
             "spans",
+            "group_attributes",
+            "generic_metrics_gauges",
         },
         {{- /*
           The default clickhouse installation runs in distributed mode, while the external

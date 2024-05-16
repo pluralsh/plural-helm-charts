@@ -440,6 +440,53 @@ data:
                 "organizations:metrics",
                 "organizations:metrics-extraction",
                 "organizations:transaction-metrics-extraction",
+
+                {{- if .Values.sentry.features.enableSessionReplay}}
+                "organizations:session-replay",
+                "organizations:session-replay-ui",
+                "organizations:session-replay-sdk",
+                "organizations:session-replay-count-query-optimize",
+                "organizations:session-replay-sdk-errors-only",
+                "organizations:session-replay-recording-scrubbing",
+                "organizations:session-replay-a11y-tab",
+                "organizations:session-replay-slack-new-issue",
+                "organizations:session-replay-issue-emails",
+                "organizations:session-replay-event-linking",
+                "organizations:session-replay-weekly-email",
+                "organizations:session-replay-trace-table",
+                "organizations:session-replay-rage-dead-selectors",
+                "organizations:session-replay-new-event-counts",
+                "organizations:session-replay-new-timeline",
+                "organizations:issue-details-replay-event",
+                {{ end -}}
+
+                "organizations:issue-platform",
+
+                {{- if .Values.sentry.features.enableProfiling }}
+                "organizations:profiling",
+                "organizations:profiling-ui-frames",
+                "organizations:profiling-using-transactions",
+                "organizations:profiling-beta",
+                "organizations:profiling-stacktrace-links",
+                "organizations:profiling-global-suspect-functions",
+                "organizations:profiling-cpu-chart",
+                "organizations:profiling-memory-chart",
+                "organizations:profiling-view",
+                {{ end -}}
+
+                {{- if .Values.sentry.features.enableFeedback }}
+                "organizations:user-feedback-ui",
+                "organizations:user-feedback-ingest",
+                "organizations:feedback-ingest",
+                "organizations:feedback-post-process-group",
+                "organizations:feedback-visible",
+                {{ end -}}
+
+                "organizations:dashboards-mep",
+                "organizations:mep-rollout-flag",
+                "organizations:dashboards-rh-widget",
+                "organizations:metrics-extraction",
+                "organizations:transaction-metrics-extraction",
                 "organizations:session-replay",
 
                 "projects:alert-filters",
