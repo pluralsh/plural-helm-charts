@@ -1,0 +1,21 @@
+dependencies:
+- name: memcached
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 6.5.2
+- name: redis
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 17.11.3
+- name: clickhouse
+  repository: https://sentry-kubernetes.github.io/charts
+  version: 3.3.0
+- name: rabbitmq
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 11.15.3
+- name: postgresql
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 12.5.1
+- name: nginx
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 14.2.2
+digest: sha256:080d4bfaa4e1473c07831dd6e971c87a87030f9955c8f633086c19f3bba8f1f7
+generated: "2024-05-15T20:12:07.637595-04:00"

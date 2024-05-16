@@ -9,18 +9,18 @@ dependencies:
   name: redis
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 17.11.3
-- condition: kafka.enabled
-  name: kafka
-  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
-  version: 16.3.2
+# - condition: kafka.enabled
+#   name: kafka
+#   repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+#   version: 16.3.2
 - condition: clickhouse.enabled
   name: clickhouse
   repository: https://sentry-kubernetes.github.io/charts
   version: 3.3.0
-- condition: zookeeper.enabled
-  name: zookeeper
-  repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
-  version: 9.0.0
+# - condition: zookeeper.enabled
+#   name: zookeeper
+#   repository: https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
+#   version: 9.0.0
 - alias: rabbitmq
   condition: rabbitmq.enabled
   name: rabbitmq
