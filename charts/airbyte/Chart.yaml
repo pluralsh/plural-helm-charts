@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.40.41
+version: 0.40.42
 
 
 # This is the version number of the application being deployed. This version number should be
@@ -33,7 +33,7 @@ dependencies:
   - condition: airbyte-bootloader.enabled
     name: airbyte-bootloader
     repository: https://pluralsh.github.io/plural-helm-charts
-    version: 0.40.41
+    version: 0.40.42
   - condition: temporal.enabled
     name: temporal
     repository: https://pluralsh.github.io/plural-helm-charts

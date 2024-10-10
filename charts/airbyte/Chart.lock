@@ -4,7 +4,7 @@ dependencies:
   version: 1.17.1
 - name: airbyte-bootloader
   repository: https://pluralsh.github.io/plural-helm-charts
-  version: 0.40.41
+  version: 0.40.42
 - name: temporal
   repository: https://pluralsh.github.io/plural-helm-charts
   version: 0.40.41
@@ -26,5 +26,5 @@ dependencies:
 - name: cron
   repository: https://pluralsh.github.io/plural-helm-charts
   version: 0.40.41
-digest: sha256:446957e5635d91f43c5c4abaaba375c9277a694c00d02041aa0bf3cec3019c90
-generated: "2022-11-16T15:54:17.658401+01:00"
+digest: sha256:0953799fe270801386472ebd88f7f6fdbe752658b5eb13b5221b023d93ee453e
+generated: "2024-10-10T13:09:33.366673-04:00"
