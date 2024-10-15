@@ -124,6 +124,22 @@ entries:
   airbyte-bootloader:
   - apiVersion: v2
     appVersion: 0.40.18
+    created: "2024-10-15T13:02:12.05311957Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Helm chart to deploy airbyte-bootloader
+    digest: f062a8b35b355d07324cd9a0f97667042d161fcc73976d9962e2655246dffba8
+    name: airbyte-bootloader
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/airbyte-bootloader-0.40.43/airbyte-bootloader-0.40.43.tgz
+    version: 0.40.43
+  - apiVersion: v2
+    appVersion: 0.40.18
     created: "2024-10-10T17:06:02.615291887Z"
     dependencies:
     - name: common
@@ -2328,4 +2344,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2024-10-10T17:10:49.586985619Z"
+generated: "2024-10-15T13:02:12.053270033Z"
