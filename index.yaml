@@ -3,6 +3,54 @@ entries:
   airbyte:
   - apiVersion: v2
     appVersion: 0.40.18
+    created: "2024-10-15T13:21:15.843546395Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    - condition: airbyte-bootloader.enabled
+      name: airbyte-bootloader
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.43
+    - condition: temporal.enabled
+      name: temporal
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.41
+    - condition: webapp.enabled
+      name: webapp
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.41
+    - condition: server.enabled
+      name: server
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.41
+    - condition: worker.enabled
+      name: worker
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.41
+    - condition: pod-sweeper.enabled
+      name: pod-sweeper
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.41
+    - condition: metrics.enabled
+      name: metrics
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.41
+    - condition: cron.enabled
+      name: cron
+      repository: https://pluralsh.github.io/plural-helm-charts
+      version: 0.40.41
+    description: Helm chart to deploy airbyte
+    digest: 200192cce3fcf5e1806f1ffccfb02516eced861690c0ad0bbbe5cbee1e133974
+    name: airbyte
+    type: application
+    urls:
+    - https://github.com/pluralsh/plural-helm-charts/releases/download/airbyte-0.40.43/airbyte-0.40.43.tgz
+    version: 0.40.43
+  - apiVersion: v2
+    appVersion: 0.40.18
     created: "2024-10-10T17:10:49.586856717Z"
     dependencies:
     - name: common
@@ -2344,4 +2392,4 @@ entries:
     urls:
     - https://github.com/pluralsh/plural-helm-charts/releases/download/yugabyte-2.15.1/yugabyte-2.15.1.tgz
     version: 2.15.1
-generated: "2024-10-15T13:02:12.053270033Z"
+generated: "2024-10-15T13:21:15.843707687Z"
